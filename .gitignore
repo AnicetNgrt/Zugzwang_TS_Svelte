@@ -1,7 +1,8 @@
-node_modules/
-packages/*/node_modules/
-packages/*/package-lock.json
-packages/client/.svelte-kit/
-packages/*/dist/
-package-lock.json
-.vscode/
+.DS_Store
+node_modules
+/build
+/.svelte-kit
+/package
+.env
+.env.*
+!.env.example
