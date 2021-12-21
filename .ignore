@@ -1,5 +1,0 @@
-# Ignore file for cargo-watch
-
-app/dist/
-app/static/
-app/target/

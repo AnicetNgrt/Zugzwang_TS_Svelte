@@ -1,0 +1,10 @@
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "watch": "lerna run dev --parallel --scope client --scope zugzwang_ts"
+  },
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  }
+}
