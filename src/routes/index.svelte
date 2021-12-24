@@ -1,2 +1,9 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script>
+    import Game from "@components/Game.svelte";
+    import BackgroundShader from "@components/BackgroundShader.svelte";
+</script>
+
+<BackgroundShader/>
+<div class="w-screen min-h-screen flex flex-col justify-center items-center z-10">
+    <Game/>
+</div>
