@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { apply, GameSession, Modifier, ModifierAddPawn, new_game } from "@game";
+    import { apply, Tile, GameSession, Modifier, ModifierAddPawn, Pawn as GamePawn, new_game, SimpleSelector, DummySelector, update_selector, ModifierPlacePawn, is_current_player } from "@game";
     import Board from "@components/Board.svelte";
     import PawnBox from "./PawnBox.svelte";
     import { Writable, writable } from "svelte/store";
-    import Pawn from "./Pawn.svelte";
-    import { setContext } from "svelte";
-
+    import { onMount, setContext } from "svelte";
+    import Pawn from "@components/Pawn.svelte";
+    
     const game = new_game({
         width: 15,
         height: 10,
@@ -16,16 +16,61 @@
         game,
         player: 'Player1',
         done: new Array<Modifier>(),
-        selected_pawn_id: -1,
-        selected_tile_position: { x: -1, y: -1 },
-        selected_pawn_filter: _ => true,
-        selected_tile_filter: _ => true
+        selector: new DummySelector()
     })
+
+    function place_pawn_cyle() {
+        $session = update_selector($session, _ => {
+            const on_pawn_selected = (pawns_ids) => {
+                $session = update_selector($session, _ => {
+                    return new SimpleSelector<Tile, number>(
+                        'Tile',
+                        1,
+                        tile => $session.game.rules.width*tile.y+tile.x,
+                        (session, tile) => {
+                            let modifier = new ModifierPlacePawn(pawns_ids[0], {
+                                x: tile.x,
+                                y: tile.y
+                            })
+                            return modifier.is_playable(session.game, session.player)
+                                && modifier.is_allowed(session.game)
+                        },
+                        (tiles_ids) => {
+                            let modifier = new ModifierPlacePawn(pawns_ids[0], {
+                                x: tiles_ids[0][0] % $session.game.rules.width,
+                                y: tiles_ids[0][0]/$session.game.rules.width
+                            })
+                            $session = apply($session, modifier)
+                            place_pawn_cyle()
+                        }
+                    )
+                })
+            }
+
+            return new SimpleSelector<GamePawn, number>(
+                'Pawn',
+                1,
+                pawn => pawn.id,
+                (session, pawn) => {
+                    if (pawn.owner == 'Gaia') return false
+                    return is_current_player(session.game, pawn.owner)
+                        && session.player == pawn.owner
+                        && pawn.state == 'Staging'
+                },
+                (pawn_ids) => setTimeout(
+                    () => on_pawn_selected(pawn_ids),
+                    100
+                )
+            )
+        })
+    }
 
     for (let i = 0; i < 3; i++) {
         $session = apply($session, new ModifierAddPawn('Player1'))
         $session = apply($session, new ModifierAddPawn('Player2'))
     }
+
+    onMount(place_pawn_cyle)
 
     setContext('mainGame', session)
 </script>

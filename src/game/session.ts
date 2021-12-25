@@ -1,23 +1,28 @@
-import type { Game, Player, Pawn, Tile } from "./model"
+import type { Game, Player } from "./model"
 import type { Modifier } from "./modifiers"
+import type { Selector } from "./selectors"
 
 export interface GameSession {
     done: Array<Modifier>
     game: Game
     player: Player
-    selected_pawn_id: number
-    selected_tile_position: { x: number, y: number }
-    selected_pawn_filter: (pawn: Pawn) => boolean
-    selected_tile_filter: (tile: Tile) => boolean
+    selector: Selector<any, any>
 }
 
-export function apply(session: GameSession, modifier: Modifier): GameSession {
-    if (modifier.is_allowed(session.game)) {
-        modifier.apply(session.game)
+export function update_selector(s: GameSession, updater: (_: Selector<any, any>) => Selector<any, any>): GameSession {
+    return {
+        ...s,
+        selector: updater(s.selector)
+    }
+}
+
+export function apply(s: GameSession, modifier: Modifier): GameSession {
+    if (modifier.is_allowed(s.game)) {
+        modifier.apply(s.game)
         return {
-            ...session,
-            done: [...session.done, modifier],
+            ...s,
+            done: [...s.done, modifier],
         }
     }
-    return session
+    return s
 }

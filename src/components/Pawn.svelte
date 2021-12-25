@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { GameSession, ModifierPlacePawn, Pawn } from "@game";
+    import { GameSession, ModifierPlacePawn, Pawn, update_selector } from "@game";
     import { tweened } from 'svelte/motion';
     import { quartInOut } from 'svelte/easing';
     import { getContext, onMount } from "svelte";
@@ -33,25 +33,17 @@
         }
         div_pos.set({ ...destination_div_pos })
 
-        update_selectable()
-        selected = session.selected_pawn_id == pawn.id
-    }
-
-    function update_selectable() {
-        selectable = $session.game.board.some(row => row.some(tile => {
-            if (pawn.state == 'Staging') {
-                return new ModifierPlacePawn(pawn.id, {...tile})
-                    .is_playable($session.game, $session.player)
-            }
-        }))
+        selectable = session.selector.is_of_type('Pawn') ? 
+            session.selector.is_candidate(session, pawn) : false
+        selected = session.selector.is_of_type('Pawn') ? 
+            session.selector.is_selected(pawn) : false
     }
 
     function try_select() {
-        if (selectable && !selected) {
-            $session = { ...$session, selected_pawn_id: pawn.id }
-        } else if ($session.selected_pawn_id == pawn.id) {
-            $session = { ...$session, selected_pawn_id: -1 }
-        }
+        $session = update_selector($session, selector => {
+            selector.toggle($session, pawn)
+            return selector
+        })
     }
 
     onMount(() => session.subscribe(on_session_update))

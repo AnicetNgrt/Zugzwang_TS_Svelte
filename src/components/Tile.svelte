@@ -18,22 +18,14 @@
 
         tile = session.game.board[position.y][position.x]
         
-        update_selectable()
-        let spos = session.selected_tile_position
-        selected = spos.x == tile.x && spos.y == tile.y
-    }
-
-    function update_selectable() {
-        selectable = $session.selected_tile_filter(tile)
+        selectable = session.selector.is_of_type('Tile') ?
+            session.selector.is_candidate(session, tile) : false
+        selected = session.selector.is_of_type('Tile') ?
+            session.selector.is_selected(tile) : false
     }
 
     function try_select() {
-        let spos = $session.selected_tile_position
-        if (selectable && !selected) {
-            $session = { ...$session, selected_tile_position: { x: tile.x, y: tile.y } }
-        } else if (spos.x == tile.x && spos.y == tile.y) {
-            $session = { ...$session, selected_tile_position: { x: tile.x, y: tile.y } }
-        }
+        
     }
 
     onMount(() => session.subscribe(on_session_update))
@@ -41,7 +33,7 @@
 
 <div 
     {id} 
-    class={"w-12 h-12 flex m-0.5 rounded-sm items-center justify-center select-none" + (selectable && !selected ? " bg-red-400/20" : "")} 
+    class={"w-11 h-11 flex m-0.5 rounded-sm items-center justify-center select-none" + (selectable && !selected ? " bg-red-400/20" : "")} 
     on:click={try_select}
 >
     <div class={"rounded-sm text-red-800/50 text-sm"}>
