@@ -4,11 +4,19 @@
     
     import Panel from "@components/Panel.svelte";
     import Tile from "@components/Tile.svelte";
+    import { getContext } from "svelte";
 
     let id_prefix: string
 
-    export let board: Board
     export { id_prefix as id }
+
+    const session: Writable<GameSession> = getContext('mainGame')
+
+    let board: Board
+
+    session.subscribe(session => {
+        board = session.game.board
+    })
 </script>
 
 <Panel class="flex flex-col p-3">

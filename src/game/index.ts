@@ -1,3 +1,5 @@
+import type { Writable } from "svelte/store"
+
 export interface GameSession {
     done: Array<Modifier>
     game: Game
@@ -81,6 +83,101 @@ export class ModifierAddPawn implements Modifier {
 
     rollback(game: Game){
         game.pawns.pop()
+    }
+}
+
+export class ModifierPlacePawn implements Modifier {
+    constructor(
+        protected pawn_id: number,
+        protected position: { x: number, y: number }
+    ) {}
+
+    is_allowed(game: Game): boolean {
+        if (game.board[this.position.y][this.position.x].state != 'Empty') return false
+        if (game.pawns[this.pawn_id].state != 'Staging') return false
+        return true
+    }
+
+    apply(game: Game) {
+        let new_pawn: PawnBase & PawnPlaced = { 
+            state: 'Placed', 
+            id: this.pawn_id,
+            owner: game.pawns[this.pawn_id].owner,
+            ...this.position
+        }
+        game.pawns[this.pawn_id] = new_pawn
+
+        let destination: TileBase & TileOccupied = {
+            ...this.position,
+            state: 'Occupied',
+            pawn_id: this.pawn_id
+        }
+        game.board[this.position.y][this.position.x] = destination
+    }
+
+    rollback(game: Game){
+        let new_pawn: PawnBase & PawnStaging = { 
+            state: 'Staging',
+            id: this.pawn_id,
+            owner: game.pawns[this.pawn_id].owner
+        }
+        game.pawns[this.pawn_id] = new_pawn
+
+        let destination: TileBase & TileEmpty = {
+            ...this.position,
+            state: 'Empty'
+        }
+        game.board[this.position.y][this.position.x] = destination
+    }
+}
+
+export class ModifierMovePawn implements Modifier {
+    protected previous_state: PawnPlaced
+
+    constructor(
+        protected pawn_id: number,
+        protected position: { x: number, y: number }
+    ) {}
+
+    is_allowed(game: Game): boolean {
+        if (game.board[this.position.y][this.position.x].state != 'Empty') return false
+        if (game.pawns[this.pawn_id].state != 'Placed') return false
+        return true
+    }
+
+    apply(game: Game) {
+        this.previous_state = { ...game.pawns[this.pawn_id] as PawnPlaced }
+
+        let new_pawn: PawnBase & PawnPlaced = { 
+            state: 'Placed', 
+            id: this.pawn_id,
+            owner: game.pawns[this.pawn_id].owner,
+            ...this.position
+        }
+        game.pawns[this.pawn_id] = new_pawn
+
+        let destination: TileBase & TileOccupied = {
+            ...this.position,
+            state: 'Occupied',
+            pawn_id: this.pawn_id
+        }
+        game.board[this.position.y][this.position.x] = destination
+
+        let origin: TileBase & TileEmpty = {
+            x: this.previous_state.x,
+            y: this.previous_state.y,
+            state: 'Empty'
+        }
+        game.board[this.previous_state.y][this.previous_state.x] = origin
+    }
+
+    rollback(game: Game){
+        const modifier = new ModifierMovePawn(this.pawn_id, {
+            x: this.previous_state.x,
+            y: this.previous_state.y
+        })
+
+        modifier.apply(game)
     }
 }
 
