@@ -1,56 +1,31 @@
 <script lang="ts">
-    import { apply, Modifier, ModifierAddPawn, ModifierMovePawn, ModifierPlacePawn, new_game } from "@game";
+    import { apply, GameSession, Modifier, ModifierAddPawn, new_game } from "@game";
     import Board from "@components/Board.svelte";
     import PawnBox from "./PawnBox.svelte";
-    import { writable } from "svelte/store";
+    import { Writable, writable } from "svelte/store";
     import Pawn from "./Pawn.svelte";
     import { setContext } from "svelte";
 
     const game = new_game({
         width: 15,
         height: 10,
-        max_pawn_per_player: 4
+        max_pawn_per_player: 3
     })
 
-    let session = writable({
+    let session: Writable<GameSession> = writable({
         game,
-        done: new Array<Modifier>()
+        player: 'Player1',
+        done: new Array<Modifier>(),
+        selected_pawn_id: -1,
+        selected_tile_position: { x: -1, y: -1 },
+        selected_pawn_filter: _ => true,
+        selected_tile_filter: _ => true
     })
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 3; i++) {
         $session = apply($session, new ModifierAddPawn('Player1'))
         $session = apply($session, new ModifierAddPawn('Player2'))
     }
-
-    function rand_range(min: number, max: number): number {
-        const num = Math.round(min+((max-min)*Math.random()))
-        return num
-    }
-
-    setTimeout(() => {
-        const timer = ms => new Promise(res => setTimeout(res, ms))
-
-        async function move_random_pawn() {
-            for (let i = 0; i < 10000; i++) {
-                const pawn_id = rand_range(0, 7)
-                const x = rand_range(0, 14)
-                const y = rand_range(0, 9)
-                let modifier: Modifier
-
-                if ($session.game.pawns[pawn_id].state == 'Staging') {
-                    modifier = new ModifierPlacePawn(pawn_id, { x, y })
-                } 
-                else {
-                    modifier = new ModifierMovePawn(pawn_id, { x, y })
-                }
-
-                $session = apply($session, modifier)
-                await timer(rand_range(1000, 1200))
-            }
-        }
-
-        move_random_pawn()
-    }, 400)
 
     setContext('mainGame', session)
 </script>

@@ -23,7 +23,7 @@
 {#each board as row}
     <div class="flex">
     {#each row as tile}
-        <Tile id={id_prefix + "-" + tile.x + "-" + tile.y}/>
+        <Tile position={{x: tile.x, y: tile.y}} id={id_prefix + "-" + tile.x + "-" + tile.y}/>
     {/each}
     </div>
 {/each}
