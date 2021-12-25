@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { GameSession, Tile } from "@game";
+    import { GameSession, Tile, update_selector } from "@game";
     import { getContext, onMount } from "svelte";
     import type { Writable } from "svelte/store";
 
@@ -25,7 +25,10 @@
     }
 
     function try_select() {
-        
+        $session = update_selector($session, selector => {
+            selector.toggle($session, tile)
+            return selector
+        })
     }
 
     onMount(() => session.subscribe(on_session_update))

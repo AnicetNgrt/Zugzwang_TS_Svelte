@@ -36,12 +36,14 @@
                                 && modifier.is_allowed(session.game)
                         },
                         (tiles_ids) => {
+                            console.log(tiles_ids[0][0] % $session.game.rules.width)
+                            console.log(tiles_ids[0][0]/$session.game.rules.width)
                             let modifier = new ModifierPlacePawn(pawns_ids[0], {
                                 x: tiles_ids[0][0] % $session.game.rules.width,
-                                y: tiles_ids[0][0]/$session.game.rules.width
+                                y: Math.floor(tiles_ids[0][0]/$session.game.rules.width)
                             })
                             $session = apply($session, modifier)
-                            place_pawn_cyle()
+                            setTimeout(place_pawn_cyle, 100)
                         }
                     )
                 })
