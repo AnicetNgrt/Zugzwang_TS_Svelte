@@ -1,28 +1,34 @@
 import type { Game, Player } from "./model"
 import type { Modifier } from "./modifiers"
+import { ModifierEndTurn } from "./modifiers"
 import type { Selector } from "./selectors"
 
 export interface GameSession {
     done: Array<Modifier>
     game: Game
     player: Player
-    selector: Selector<any, any>
+    selector: Selector
 }
 
-export function update_selector(s: GameSession, updater: (_: Selector<any, any>) => Selector<any, any>): GameSession {
-    return {
-        ...s,
-        selector: updater(s.selector)
-    }
+export function update_selector(s: GameSession, updater: (_: Selector) => Selector): GameSession {
+    s.selector = updater(s.selector)
+    return s
 }
 
 export function apply(s: GameSession, modifier: Modifier): GameSession {
     if (modifier.is_allowed(s.game)) {
         modifier.apply(s.game)
-        return {
-            ...s,
-            done: [...s.done, modifier],
-        }
+        s.done.push(modifier)
+        return s
+    }
+    return s
+}
+
+export function rollback(s: GameSession): GameSession {
+    console.log(s.done[s.done.length-1])
+    if (s.done.length > 0 && !(s.done[s.done.length-1] instanceof ModifierEndTurn)) {
+        s.done.pop().rollback(s.game)
+        return s
     }
     return s
 }

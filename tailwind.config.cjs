@@ -3,7 +3,12 @@ module.exports = {
     "./src/**/*.svelte"
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'sans': ['Cabinet Grotesk', 'sans-serif'],
+        'serif': ['Stardom', 'serif']
+      }
+    },
   },
   plugins: [],
 }

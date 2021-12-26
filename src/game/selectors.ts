@@ -1,43 +1,84 @@
 import type { Tile, Pawn } from "./model"
 import type { GameSession } from "./session"
 
-interface SelectedItems {
-    tiles_positions: Array<{ x: number, y: number }>
-    pawns_ids: Array<number>
+type SelectableObject = null | Tile | Pawn
+type SelectableType = 'null' | 'Tile' | 'Pawn'
+
+export class Selectable {
+    constructor(
+        protected object: SelectableObject,
+        protected type: SelectableType
+    ) {}
+
+    get_type(): SelectableType {
+        return this.type
+    }
+
+    as_tile(): Tile {
+        return this.type == 'Tile' ? this.object as Tile : null
+    }
+
+    as_pawn(): Pawn {
+        return this.type == 'Pawn' ? this.object as Pawn : null
+    }
+
+    equals(selectable: Selectable): boolean {
+        if (selectable.type != this.type) return false
+        if (this.type == 'Pawn') return (this.object as Pawn).id == (selectable.object as Pawn).id
+        if (this.type == 'Tile') {
+            const { x: xA, y: yA } = this.object as Tile
+            const { x: xB, y: yB } = selectable.object as Tile
+            return xA == xB && yA == yB
+        }
+    }
 }
 
-export interface Selector<T, I> {
-    is_of_type(type: string): boolean
-    on_finished(callback: (selected: [I[]]) => void)
+// export class SelectableTile extends Selectable {
+//     constructor(
+//         object: Tile
+//     ) {
+//         super(object, 'Tile')
+//     }
+// }
+
+// export class SelectablePawn extends Selectable {
+//     constructor(
+//         object: Pawn
+//     ) {
+//         super(object, 'Pawn')
+//     }
+// }
+
+export interface Selector {
+    on_finished(callback: (selected: [Selectable[]]) => void)
     is_finished(): boolean
     is_empty(): boolean
-    is_candidate(session: GameSession, el: T): boolean
-    is_selected(el: T): boolean
-    toggle(session: GameSession, el: T): boolean
+    is_candidate(session: GameSession, el: Selectable): boolean
+    is_selected(el: Selectable): boolean
+    toggle(session: GameSession, el: Selectable): boolean
 }
 
-export class SimpleSelector<T, I> implements Selector<T, I> {
-    protected selected: I[]
+export class SimpleSelector implements Selector {
+    protected selected: Selectable[]
 
     constructor(
-        public type: string,
+        protected type: SelectableType,
         protected max: number,
-        protected e_to_i: (el: T) => I,
-        public is_candidate: (session: GameSession, el: T) => boolean,
-        protected callback: (selected: [I[]]) => void = _ => {}
+        protected is_candidate_middleware: (session: GameSession, el: Selectable) => boolean,
+        protected callback: (selected: [Selectable[]]) => void = _ => {}
     ) {
         this.selected = []
     }
 
-    is_of_type(type: string): boolean {
-        return this.type === type
+    is_candidate(session: GameSession, el: Selectable): boolean {
+        return el.get_type() == this.type && this.is_candidate_middleware(session, el)
     }
 
     is_empty(): boolean {
         return this.selected.length == 0
     }
 
-    on_finished(callback: (selected: [I[]]) => void) {
+    on_finished(callback: (selected: [Selectable[]]) => void) {
         this.callback = callback
     }
 
@@ -45,19 +86,19 @@ export class SimpleSelector<T, I> implements Selector<T, I> {
         return this.selected.length >= this.max
     }
 
-    is_selected(el: T): boolean {
-        return this.selected.some(id => id == this.e_to_i(el))
+    is_selected(el: Selectable): boolean {
+        return this.selected.some(selected_el => selected_el.equals(el))
     }
 
-    toggle(_session: GameSession, el: T): boolean {
+    toggle(_session: GameSession, el: Selectable): boolean {
         if (this.is_selected(el)) {
             this.selected = this.selected
-                .filter(id => id != this.e_to_i(el))
+                .filter(selected_el => selected_el.equals(el))
         } else {
             if (this.selected.length >= this.max) {
                 this.selected.pop()
             }
-            this.selected.push(this.e_to_i(el))
+            this.selected.push(el)
             if (this.is_finished()) this.callback([this.selected])
             return true
         }
@@ -65,12 +106,8 @@ export class SimpleSelector<T, I> implements Selector<T, I> {
     }
 }
 
-export class DummySelector<T, I> implements Selector<T, I> {
-    is_of_type(_type: string): boolean {
-        return false
-    }
-
-    on_finished(_callback: (selected: [I[]]) => void) {}
+export class DummySelector implements Selector {
+    on_finished(_callback: (selected: [null[]]) => void) {}
 
     is_finished(): boolean {
         return false
@@ -80,46 +117,16 @@ export class DummySelector<T, I> implements Selector<T, I> {
         return true
     }
 
-    is_candidate(_session: GameSession, _el: T): boolean {
+    is_candidate(_session: GameSession, _el: null): boolean {
         return false
     }
 
-    is_selected(_el: T): boolean {
+    is_selected(_el: null): boolean {
         return false
     }
 
-    toggle(_session: GameSession, _el: T): boolean {
+    toggle(_session: GameSession, _el: null): boolean {
         return false
-    }
-}
-
-export class DoubleSelector<A, IdxA, B, IdxB, T = A | B, I = IdxA | IdxB> implements Selector<T, I> {
-    constructor(
-        protected first: Selector<A, IdxA>,
-        protected second: Selector<B, IdxB>
-    ) {}
-
-    is_of_type(type: string): boolean {
-        return this.first.is_of_type(type) || this.second.is_of_type(type)
-    }
-    
-    on_finished(callback: (selected: [I[]]) => void) {
-        throw new Error("Method not implemented.")
-    }
-    is_finished(): boolean {
-        throw new Error("Method not implemented.")
-    }
-    is_empty(): boolean {
-        throw new Error("Method not implemented.")
-    }
-    is_candidate(session: GameSession, el: T): boolean {
-        throw new Error("Method not implemented.")
-    }
-    is_selected(el: T): boolean {
-        throw new Error("Method not implemented.")
-    }
-    toggle(session: GameSession, el: T): boolean {
-        throw new Error("Method not implemented.")
     }
 }
 

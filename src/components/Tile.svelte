@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { GameSession, Tile, update_selector } from "@game";
+    import { GameSession, Selectable, Selector, Tile, update_selector } from "@game";
     import { getContext, onMount } from "svelte";
     import type { Writable } from "svelte/store";
 
@@ -18,15 +18,14 @@
 
         tile = session.game.board[position.y][position.x]
         
-        selectable = session.selector.is_of_type('Tile') ?
-            session.selector.is_candidate(session, tile) : false
-        selected = session.selector.is_of_type('Tile') ?
-            session.selector.is_selected(tile) : false
+        selectable = session.selector.is_candidate(session, new Selectable(tile, 'Tile'))
+        selected = session.selector.is_selected(new Selectable(tile, 'Tile'))
     }
 
     function try_select() {
-        $session = update_selector($session, selector => {
-            selector.toggle($session, tile)
+        if (!selectable) return false
+        $session = update_selector($session, (selector: Selector) => {
+            selector.toggle($session, new Selectable(tile, 'Tile'))
             return selector
         })
     }
@@ -36,10 +35,10 @@
 
 <div 
     {id} 
-    class={"w-11 h-11 flex m-0.5 rounded-sm items-center justify-center select-none" + (selectable && !selected ? " bg-red-400/20" : "")} 
+    class={"w-11 h-11 flex m-0.5 rounded-sm items-center justify-center select-none transition-all" + (selectable ? " cursor-pointer" : " cursor-default") + (selectable && !selected ? " bg-red-400/20 hover:bg-red-400/50" : "")} 
     on:click={try_select}
 >
-    <div class={"rounded-sm text-red-800/50 text-sm"}>
-        •
+    <div class={"rounded-sm text-red-800/50 text-2xl"}>
+        +
     </div>
 </div>

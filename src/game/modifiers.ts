@@ -15,6 +15,24 @@ export function can_play(game: Game, modifier: Modifier, player: Player): boolea
     return true
 }
 
+export class ModifierEndTurn implements Modifier {
+    apply(game: Game) {
+        game.turn += 1
+    }
+
+    rollback(game: Game) {
+        game.turn -= 1
+    }
+
+    is_allowed(_game: Game): boolean {
+        return true
+    }
+
+    is_playable(game: Game, player: Player): boolean {
+        return ! game.pawns.some(p => p.owner == player && p.state == 'Staging')
+    }
+}
+
 export class ModifierAddPawn implements Modifier {
     constructor(
         protected owner: Entity

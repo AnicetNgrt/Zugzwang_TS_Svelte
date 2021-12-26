@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { GameSession, ModifierPlacePawn, Pawn, update_selector } from "@game";
+    import { GameSession, ModifierPlacePawn, Pawn, Selectable, Selector, update_selector } from "@game";
     import { tweened } from 'svelte/motion';
     import { quartInOut } from 'svelte/easing';
     import { getContext, onMount } from "svelte";
@@ -33,15 +33,13 @@
         }
         div_pos.set({ ...destination_div_pos })
 
-        selectable = session.selector.is_of_type('Pawn') ? 
-            session.selector.is_candidate(session, pawn) : false
-        selected = session.selector.is_of_type('Pawn') ? 
-            session.selector.is_selected(pawn) : false
+        selectable = session.selector.is_candidate(session, new Selectable(pawn, 'Pawn'))
+        selected = session.selector.is_selected(new Selectable(pawn, 'Pawn'))
     }
 
     function try_select() {
-        $session = update_selector($session, selector => {
-            selector.toggle($session, pawn)
+        $session = update_selector($session, (selector: Selector) => {
+            selector.toggle($session, new Selectable(pawn, 'Pawn'))
             return selector
         })
     }
@@ -59,28 +57,12 @@
 
 {#if pawn}
     <div 
-    class="absolute w-12 h-12 flex justify-center items-center"
+    class="absolute w-11 h-11 flex justify-center items-center"
     style={`top: ${$div_pos.y}px; left: ${$div_pos.x}px;`}
     on:click={try_select}
     >
-        <div class={"w-10 h-10 flex justify-center items-center transition-all rounded-full bg-gradient-to-t shadow-md shadow-black/20 text-blue-600 box-content " + owner_color[pawn.owner] + ( moving ? " scale-110 z-10 shadow-xl shadow-black/30" : "" ) + (selectable ? " cursor-pointer" : " cursor-not-allowed") + (selected ? " scale-110 z-10 shadow-xl shadow-black/30 opacity-100" : " opacity-80") + (!selected && selectable ? " animate-opacity" : "") }>
+        <div class={"w-9 h-9 flex justify-center items-center transition-all rounded-full bg-gradient-to-t shadow-md shadow-black/20 text-blue-600 box-content " + owner_color[pawn.owner] + ( moving ? " scale-110 z-10 shadow-xl shadow-black/30" : "" ) + (selectable ? " cursor-pointer" : " cursor-not-allowed") + (selected ? " scale-110 z-10 shadow-xl shadow-black/30 opacity-100" : " opacity-80") + (!selected && selectable ? " ring-4 ring-red-400/50" : "") }>
             
         </div>
     </div>
 {/if}
-
-<style>
-    .animate-opacity {
-        animation: onoff 3s linear infinite;
-    }
-
-    @keyframes onoff {
-        0%, 100% {
-            opacity: 0.6;
-        }
-
-        50% {
-            opacity: 1;
-        }
-    }
-</style>
