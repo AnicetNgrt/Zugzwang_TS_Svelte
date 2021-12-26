@@ -37,7 +37,16 @@ import Panel from "./Panel.svelte";
 
 <div class="flex w-full justify-between">
     <div class="flex justify-center items-end gap-2">
-        <div class="pr-2 text-primary-400/50 font-sans flex flex-col">
+        <div class="ml-2 text-primary-400/50 font-sans flex items-center">
+            <div class={"mt-3 mr-2 -mb-1.5 font-serif text-7xl " + ($session.game.turn % 2 == 0 ? " text-black/60" : " text-white/50")}>
+                { $session.game.action_points.get('Player1') }
+            </div>
+            <div class="flex flex-col">
+                <div class="h-5 text-xl">action</div>
+                <div class="mb-2 text-xl">points</div>
+            </div>
+        </div>
+        <div class="mx-4 pt-3 text-primary-400/50 font-sans flex flex-col">
             <div class="h-4 text-xl">turn</div>
             <div class="flex mt-1">
                 <div class="text-xl mr-1">
