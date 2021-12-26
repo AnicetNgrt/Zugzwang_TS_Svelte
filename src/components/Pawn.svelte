@@ -34,7 +34,7 @@
         div_pos.set({ ...destination_div_pos })
 
         selectable = session.selector.is_candidate(session, new Selectable(pawn, 'Pawn'))
-        selected = session.selector.is_selected(new Selectable(pawn, 'Pawn'))
+        selected = session.selector.is_selected(session, new Selectable(pawn, 'Pawn'))
     }
 
     function try_select() {

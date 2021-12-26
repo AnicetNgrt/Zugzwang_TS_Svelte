@@ -1,11 +1,12 @@
 <script lang="ts">
-    import { apply, Tile, GameSession, Modifier, ModifierAddPawn, Pawn as GamePawn, new_game, SimpleSelector, DummySelector, update_selector, ModifierPlacePawn, is_current_player, ModifierEndTurn, can_play, Selectable, rollback } from "@game";
     import Board from "@components/Board.svelte";
     import PawnBox from "@components/PawnBox.svelte";
     import { Writable, writable } from "svelte/store";
     import { onMount, setContext } from "svelte";
     import Pawn from "@components/Pawn.svelte";
     import PanelButton from "@components/PanelButton.svelte";
+    import { apply, can_play, ChainedSelector, DummySelector, is_current_player, ModifierAddPawn, ModifierEndTurn, new_game, rollback, SimpleSelector, update_selector } from "@game";
+    import type { Modifier, GameSession } from "@game";
     
     const game = new_game({
         width: 15,
@@ -24,51 +25,48 @@
     let can_undo = false
 
     function place_pawn_cyle() {
-        $session = update_selector($session, _ => {
-            const on_pawn_selected = (els: [Selectable[]]) => {
-                const pawns_ids = els[0].map(el => el.as_pawn().id)
-                $session = update_selector($session, _ => {
-                    return new SimpleSelector(
-                        'Tile',
-                        1,
-                        (session, el) => {
-                            const tile = el.as_tile()
-                            let modifier = new ModifierPlacePawn(pawns_ids[0], {
-                                x: tile.x,
-                                y: tile.y
-                            })
-                            return modifier.is_playable(session.game, session.player)
-                                && modifier.is_allowed(session.game)
-                        },
-                        (els: [Selectable[]]) => {
-                            const tile = els[0][0].as_tile()
-                            let modifier = new ModifierPlacePawn(pawns_ids[0], {
-                                x: tile.x,
-                                y: tile.y
-                            })
-                            $session = apply($session, modifier)
-                            setTimeout(place_pawn_cyle, 100)
-                        }
-                    )
-                })
-            }
-
-            return new SimpleSelector(
-                'Pawn',
-                1,
-                (session, el) => {
-                    const pawn = el.as_pawn()
-                    if (pawn.owner == 'Gaia') return false
-                    return is_current_player(session.game, pawn.owner)
-                        && session.player == pawn.owner
-                        && pawn.state == 'Staging'
-                },
-                (els) => setTimeout(
-                    () => on_pawn_selected(els),
-                    100
+        $session = update_selector($session, _ => new ChainedSelector(
+            [
+                new SimpleSelector(
+                    'Pawn', 2,
+                    (session, el) => {
+                        const pawn = el.as_pawn()
+                        if (pawn.owner == 'Gaia') return false
+                        return is_current_player(session.game, pawn.owner)
+                            && session.player == pawn.owner
+                            && pawn.state == 'Staging'
+                    },
+                    (selected_tree) => {
+                        console.log('FIRST FINISHED')
+                        console.log(selected_tree)
+                    }
+                ),
+                new SimpleSelector(
+                    'Tile', 4,
+                    (_session, el) => {
+                        return true
+                    },
+                    (selected_tree) => {
+                        console.log('SECOND FINISHED')
+                        console.log(selected_tree)
+                    }
+                ),
+                new SimpleSelector(
+                    'Pawn', 2,
+                    (_session, el) => {
+                        return true
+                    },
+                    (selected_tree) => {
+                        console.log('THIRD FINISHED')
+                        console.log(selected_tree)
+                    }
                 )
-            )
-        })
+            ],
+            (selected_tree) => {
+                console.log('CHAIN FINISHED')
+                console.log(selected_tree)
+            }
+        ))
     }
 
     for (let i = 0; i < 3; i++) {
@@ -114,7 +112,7 @@
                 <div class="text-xl mr-1">
                     n°
                 </div>
-                <div class="font-serif text-5xl w-14">
+                <div class={"font-serif text-5xl w-14" + ($session.game.turn % 2 == 0 ? " text-black/60" : " text-white/50")}>
                     { $session.game.turn < 10 ? '0'+$session.game.turn : $session.game.turn }
                 </div>
             </div>

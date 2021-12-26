@@ -19,7 +19,7 @@ function new_board(width: number, height: number): Board {
 
     const tiles: Array<Array<Tile>> = range(height).map(
         (_, y) => range(width).map(
-            (_, x) => ({ id: y*width+x, x, y, state: 'Empty' })))
+            (_, x) => ({ x, y, state: 'Empty' })))
 
     return tiles
 }

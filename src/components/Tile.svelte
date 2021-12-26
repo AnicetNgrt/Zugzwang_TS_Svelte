@@ -19,7 +19,7 @@
         tile = session.game.board[position.y][position.x]
         
         selectable = session.selector.is_candidate(session, new Selectable(tile, 'Tile'))
-        selected = session.selector.is_selected(new Selectable(tile, 'Tile'))
+        selected = session.selector.is_selected(session, new Selectable(tile, 'Tile'))
     }
 
     function try_select() {

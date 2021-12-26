@@ -4,6 +4,11 @@ import type { GameSession } from "./session"
 type SelectableObject = null | Tile | Pawn
 type SelectableType = 'null' | 'Tile' | 'Pawn'
 
+type SelectedTree = SelectedTreeLeaf | SelectedTreeRoot
+
+interface SelectedTreeLeaf { type: 'Leaf', items: Selectable[] }
+interface SelectedTreeRoot { type: 'Root', children: SelectedTree[] }
+
 export class Selectable {
     constructor(
         protected object: SelectableObject,
@@ -33,28 +38,13 @@ export class Selectable {
     }
 }
 
-// export class SelectableTile extends Selectable {
-//     constructor(
-//         object: Tile
-//     ) {
-//         super(object, 'Tile')
-//     }
-// }
-
-// export class SelectablePawn extends Selectable {
-//     constructor(
-//         object: Pawn
-//     ) {
-//         super(object, 'Pawn')
-//     }
-// }
-
 export interface Selector {
-    on_finished(callback: (selected: [Selectable[]]) => void)
+    on_finished(callback: (selected: SelectedTree) => void)
+    get_callback(): (selected: SelectedTree) => void
     is_finished(): boolean
     is_empty(): boolean
     is_candidate(session: GameSession, el: Selectable): boolean
-    is_selected(el: Selectable): boolean
+    is_selected(session: GameSession, el: Selectable): boolean
     toggle(session: GameSession, el: Selectable): boolean
 }
 
@@ -65,7 +55,7 @@ export class SimpleSelector implements Selector {
         protected type: SelectableType,
         protected max: number,
         protected is_candidate_middleware: (session: GameSession, el: Selectable) => boolean,
-        protected callback: (selected: [Selectable[]]) => void = _ => {}
+        protected callback: (selected: SelectedTree) => void = _ => {}
     ) {
         this.selected = []
     }
@@ -78,28 +68,32 @@ export class SimpleSelector implements Selector {
         return this.selected.length == 0
     }
 
-    on_finished(callback: (selected: [Selectable[]]) => void) {
+    on_finished(callback: (selected: SelectedTree) => void) {
         this.callback = callback
+    }
+
+    get_callback(): (selected: SelectedTree) => void {
+        return this.callback
     }
 
     is_finished(): boolean {
         return this.selected.length >= this.max
     }
 
-    is_selected(el: Selectable): boolean {
+    is_selected(_session: GameSession, el: Selectable): boolean {
         return this.selected.some(selected_el => selected_el.equals(el))
     }
 
-    toggle(_session: GameSession, el: Selectable): boolean {
-        if (this.is_selected(el)) {
+    toggle(session: GameSession, el: Selectable): boolean {
+        if (this.is_selected(session, el)) {
             this.selected = this.selected
-                .filter(selected_el => selected_el.equals(el))
+                .filter(selected_el => !selected_el.equals(el))
         } else {
             if (this.selected.length >= this.max) {
                 this.selected.pop()
             }
             this.selected.push(el)
-            if (this.is_finished()) this.callback([this.selected])
+            if (this.is_finished()) this.callback({ type: "Leaf", items: this.selected })
             return true
         }
         return false
@@ -107,7 +101,11 @@ export class SimpleSelector implements Selector {
 }
 
 export class DummySelector implements Selector {
-    on_finished(_callback: (selected: [null[]]) => void) {}
+    get_callback(): (selected: SelectedTree) => void {
+        return _ => {}
+    }
+
+    on_finished(_callback: (selected: SelectedTree) => void) {}
 
     is_finished(): boolean {
         return false
@@ -121,7 +119,7 @@ export class DummySelector implements Selector {
         return false
     }
 
-    is_selected(_el: null): boolean {
+    is_selected(_session: GameSession, _el: null): boolean {
         return false
     }
 
@@ -130,112 +128,106 @@ export class DummySelector implements Selector {
     }
 }
 
-// export class ChainedSelector implements Selector {
-//     protected previous: Selector
-//     protected current: Selector
-//     protected current_id: number
-//     protected all_selected: Array<SelectedItems>
+export class ChainedSelector implements Selector {
+    protected previous: Selector
+    protected current: Selector
+    protected current_id: number
+    protected selected_tree: SelectedTreeRoot
+    protected final_chain_initial_callback: (selected: SelectedTree) => void
 
-//     constructor(
-//         protected chain: [Selector]
-//     ) {
-//         this.previous = null
-//         this.current = chain[0]
-//         this.current_id = 0
-//         this.all_selected = []
-//         for (let i = 0; i < chain.length-1; i++) {
-//             chain[i].on_finished(selected => {
-//                 this.previous = chain[i]
-//                 this.current = chain[i+1]
-//                 this.current_id = i+1
-//                 this.all_selected.push(selected[0])
-                
-//                 chain[i].on_finished(selected => {
-//                     this.all_selected[i] = selected[0]
-//                 })
-//             })
-//         }
-//     }
+    constructor(
+        protected chain: Selector[],
+        callback: (selected_tree: SelectedTree) => void
+    ) {
+        this.previous = null
+        this.current = chain[0]
+        this.current_id = 0
+        this.selected_tree = {
+            type: 'Root',
+            children: chain.map(_ => ({
+                type: 'Leaf',
+                items: []
+            }))
+        }
+        
+        for (let i = 0; i < chain.length-1; i++) {
+            const initial_callback = chain[i].get_callback()
+            chain[i].on_finished(selected_tree => {
+                initial_callback(selected_tree)
+                this.previous = chain[i]
+                this.current = chain[i+1]
+                this.current_id = i+1
+                this.selected_tree.children[i] = selected_tree
+            
+                chain[i].on_finished(selected_tree => {
+                    initial_callback(selected_tree)
+                    if (i == this.current_id) {
+                        this.previous = chain[i]
+                        this.current = chain[i+1]
+                        this.current_id = i+1
+                    }
+                    this.selected_tree.children[i] = selected_tree
+                })
+            })
+        }
 
-//     is_empty(): boolean {
-//         return !this.previous && this.current.is_empty()
-//     }
+        this.final_chain_initial_callback = this.chain[this.chain.length-1].get_callback()
+        this.on_finished(callback)
+    }
 
-//     is_tile_candidate(session: GameSession, tile: Tile): boolean {
-//         if (
-//             this.previous 
-//             && this.current.is_empty() 
-//             && !this.current.is_tile_candidate(session, tile)
-//         ) {
-//             return this.previous.is_tile_candidate(session, tile)
-//         }
-//         return this.current.is_tile_candidate(session, tile)
-//     }
+    is_empty(): boolean {
+        return this.current_id == 0 && this.current.is_empty()
+    }
 
-//     is_pawn_candidate(session: GameSession, pawn: Pawn): boolean {
-//         if (
-//             this.previous
-//             && this.current.is_empty()
-//             && !this.current.is_pawn_candidate(session, pawn)
-//         ) {
-//             return this.previous.is_pawn_candidate(session, pawn)
-//         }
-//         return this.current.is_pawn_candidate(session, pawn)
-//     }
+    is_candidate(session: GameSession, el: Selectable): boolean {
+        if (
+            this.previous 
+            && this.current.is_empty() 
+            && !this.current.is_candidate(session, el)
+        ) {
+            return this.previous.is_candidate(session, el)
+        }
+        return this.current.is_candidate(session, el)
+    }
 
-//     on_finished(callback: (selected: [SelectedItems]) => void) {
-//         this.chain[this.chain.length-1].on_finished(selected => {
-//             this.all_selected.push(selected[0])
-//             callback(this.all_selected as [SelectedItems])
-//         })
-//     }
+    on_finished(callback: (selected_tree: SelectedTree) => void) {
+        this.chain[this.chain.length-1].on_finished(selected_tree => {
+            this.final_chain_initial_callback(selected_tree)
+            this.selected_tree.children[this.chain.length-1] = selected_tree
+            callback(this.selected_tree)
+        })
+    }
 
-//     is_finished(): boolean {
-//         return this.current == this.chain[this.chain.length-1]
-//             && this.current.is_finished()
-//     }
+    get_callback(): (selected: SelectedTree) => void {
+        return this.chain[this.chain.length-1].get_callback()
+    }
 
-//     is_tile_selected(tile: Tile): boolean {
-//         return this.chain.some(c => c.is_tile_selected(tile))
-//     }
+    is_finished(): boolean {
+        return this.current == this.chain[this.chain.length-1]
+            && this.current.is_finished()
+    }
 
-//     is_pawn_selected(pawn: Pawn): boolean {
-//         return this.chain.some(c => c.is_pawn_selected(pawn))
-//     }
+    is_selected(session: GameSession, el: Selectable): boolean {
+        if (!this.current.is_selected(session, el) && this.current.is_candidate(session, el)) return false
+        return this.chain.some(c => c.is_selected(session, el))
+    }
 
-//     toggle_tile(session: GameSession, tile: Tile): boolean {
-//         if (
-//             this.previous
-//             && this.current.is_empty()
-//             && this.current.is_tile_candidate(session, tile)
-//         ) {
-//             const result = this.previous.toggle_tile(session, tile)
-//             if (!result && this.previous.is_empty() && this.current_id > 0) {
-//                 this.previous = this.current_id >= 2 ? this.chain[this.current_id-2] : null
-//                 this.current = this.previous
-//                 this.current_id -= 1
-//             }
-//             return result
-//         }
+    toggle(session: GameSession, el: Selectable): boolean {
+        if (
+            this.previous
+            && this.current.is_empty()
+            && !this.current.is_candidate(session, el)
+            && this.previous.is_candidate(session, el)
+        ) {
+            const result = this.previous.toggle(session, el)
+            if (!result && this.previous.is_empty() && this.current_id > 0) {
+                this.current = this.previous
+                this.previous = this.current_id >= 2 ? this.chain[this.current_id-2] : null
+                this.current_id -= 1
+            }
+            return result
+        }
 
-//         return this.current.toggle_tile(session, tile)
-//     }
-
-//     toggle_pawn(session: GameSession, pawn: Pawn): boolean {
-//         if (
-//             this.previous
-//             && this.current.is_empty()
-//             && this.current.is_pawn_candidate(session, pawn)
-//         ) {
-//             const result = this.previous.toggle_pawn(session, pawn)
-//             if (!result && this.previous.is_empty() && this.current_id > 0) {
-//                 this.previous = this.current_id >= 2 ? this.chain[this.current_id-2] : null
-//                 this.current = this.previous
-//                 this.current_id -= 1
-//             }
-//             return result
-//         }
-
-//         return this.current.toggle_pawn(session, pawn)
-//     }
-// }
+        return this.current.toggle(session, el)
+    }
+}
