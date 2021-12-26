@@ -3,7 +3,6 @@ import type { Board, Game, Rules, Tile } from "./model"
 export * from './model'
 export * from './modifiers'
 export * from './session'
-export * from './selectors'
 
 export function new_game(rules: Rules): Game {
     return {

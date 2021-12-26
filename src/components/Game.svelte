@@ -5,7 +5,7 @@
     import { onMount, setContext } from "svelte";
     import Pawn from "@components/Pawn.svelte";
     import PanelButton from "@components/PanelButton.svelte";
-    import { apply, can_play, ChainedSelector, DummySelector, is_current_player, ModifierAddPawn, ModifierEndTurn, new_game, rollback, SimpleSelector, update_selector } from "@game";
+    import { apply, can_play, DummySelector, ModifierAddPawn, ModifierEndTurn, new_game, place_pawn, rollback, update_selector } from "@game";
     import type { Modifier, GameSession } from "@game";
     
     const game = new_game({
@@ -24,49 +24,12 @@
     let can_end_turn = false
     let can_undo = false
 
-    function place_pawn_cyle() {
-        $session = update_selector($session, _ => new ChainedSelector(
-            [
-                new SimpleSelector(
-                    'Pawn', 2,
-                    (session, el) => {
-                        const pawn = el.as_pawn()
-                        if (pawn.owner == 'Gaia') return false
-                        return is_current_player(session.game, pawn.owner)
-                            && session.player == pawn.owner
-                            && pawn.state == 'Staging'
-                    },
-                    (selected_tree) => {
-                        console.log('FIRST FINISHED')
-                        console.log(selected_tree)
-                    }
-                ),
-                new SimpleSelector(
-                    'Tile', 4,
-                    (_session, el) => {
-                        return true
-                    },
-                    (selected_tree) => {
-                        console.log('SECOND FINISHED')
-                        console.log(selected_tree)
-                    }
-                ),
-                new SimpleSelector(
-                    'Pawn', 2,
-                    (_session, el) => {
-                        return true
-                    },
-                    (selected_tree) => {
-                        console.log('THIRD FINISHED')
-                        console.log(selected_tree)
-                    }
-                )
-            ],
-            (selected_tree) => {
-                console.log('CHAIN FINISHED')
-                console.log(selected_tree)
-            }
-        ))
+    function place_pawn_cycle() {
+        const selector = place_pawn(modifier => {
+            $session = apply($session, modifier)
+            setTimeout(place_pawn_cycle, 100)
+        })
+        $session = update_selector($session, _ => selector)
     }
 
     for (let i = 0; i < 3; i++) {
@@ -99,7 +62,7 @@
         }
     }
 
-    onMount(place_pawn_cyle)
+    onMount(place_pawn_cycle)
 
     setContext('mainGame', session)
 </script>
@@ -107,7 +70,7 @@
 <div class="flex flex-col gap-3">
     <div class="flex justify-center items-end gap-2">
         <div class="pr-2 text-red-400/50 font-sans flex flex-col">
-            <div class="h-5 text-xl">turn</div>
+            <div class="h-4 text-xl">turn</div>
             <div class="flex mt-1">
                 <div class="text-xl mr-1">
                     n°
