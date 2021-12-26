@@ -15,6 +15,9 @@
 	}
 
 	import { onMount } from 'svelte'
+
+    export let color
+    export let accent
 		
 	let app
 	
@@ -88,7 +91,8 @@
             uv = (2.*uv) - vec2(1.);
             // uv.x *= iResolution.x/iResolution.y;
 
-            vec3 color = vec3(1., 0.1, 0.2)*0.7;
+            vec3 color = vec3(${color.r}./255., ${color.g}./255., ${color.b}./255.);
+            vec3 accent_color = vec3(${accent.r}./255., ${accent.g}./255., ${accent.b}./255.);
             
             vec3 tangent = vec3(0.);
             float h = wave(uv, tangent, -t, PI/2., 0.3, 1.*zoom, 0.1)
@@ -102,8 +106,8 @@
             vec3 lpos = vec3(cos(t)*1., 2., sin(t)*1.);
             float lam = smoothstep(0., 2., dot(n, normalize(lpos-p)));
             
-            vec3 water = smoothstep(-1., 0.4, lam)*vec3(color);
-            vec3 shiny = (vec3(smoothstep(0.9, 1., lam))*vec3(1., 0.6, 0.2)*0.1);
+            vec3 water = smoothstep(-1., 0.4, lam)*vec3(color*0.7);
+            vec3 shiny = (vec3(smoothstep(0.9, 1., lam))*accent_color*0.1);
             
             gl_FragColor = vec4(water+shiny, 1.0);
         }`

@@ -35,10 +35,10 @@
 
 <div 
     {id} 
-    class={"w-11 h-11 flex m-0.5 rounded-sm items-center justify-center select-none transition-all" + (selectable ? " cursor-pointer" : " cursor-default") + (selectable && !selected ? " bg-red-400/20 hover:bg-red-400/50" : "")} 
+    class={"w-11 h-11 flex m-0.5 rounded-sm items-center justify-center select-none transition-all" + (selectable ? " cursor-pointer" : " cursor-default") + (selectable && !selected ? " bg-primary-400/20 hover:bg-primary-400/50" : "")} 
     on:click={try_select}
 >
-    <div class={"rounded-sm text-red-800/50 text-2xl"}>
+    <div class={"rounded-sm text-primary-800/50 text-2xl"}>
         +
     </div>
 </div>

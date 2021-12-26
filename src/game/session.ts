@@ -9,6 +9,11 @@ export interface GameSession {
     game: Game
     player: Player
     selector: Selector
+    players_metadata: Map<Player, PlayerMetadata>
+}
+
+export interface PlayerMetadata {
+    name: string
 }
 
 export function update_selector(s: GameSession, updater: (_: Selector) => Selector): GameSession {

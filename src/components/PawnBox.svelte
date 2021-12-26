@@ -1,9 +1,6 @@
 <script lang="ts">
-    import type { Writable } from "svelte/store";
-
     import Panel from "@components/Panel.svelte";
     import Tile from "@components/Tile.svelte";
-    import type { GameSession } from "@game";
     
     export let revert: boolean = false;
 

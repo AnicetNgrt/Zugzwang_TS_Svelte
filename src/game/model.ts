@@ -3,10 +3,12 @@ export interface Game {
     board: Board
     pawns: Array<Pawn>
     turn: number
+    action_points: Map<Player, number>
 }
 
 export interface Rules {
     max_pawn_per_player: number
+    max_ap: number
     width: number
     height: number
 }
@@ -38,6 +40,24 @@ export interface PawnPlaced { state: 'Placed'; x: number, y: number }
 export type Player = 'Player1' | 'Player2'
 
 export type Entity = Player | 'Gaia'
+
+export interface Card {
+    type: 'Displacement' | 'Action',
+    index: number,
+    owner: Entity,
+    used_turn: number,
+    max_use_turn: number,
+    used_game: number,
+    max_use_game: number
+}
+
+export interface DisplacementCard {
+    type: 'Displacement'
+    is_destination(
+        origin: { x: number, y: number }, 
+        candidate: { x: number, y: number }
+    ): boolean
+}
 
 export function is_current_player(game: Game, player: Player): boolean {
     if (game.turn % 2 == 1 && player != 'Player1') return false

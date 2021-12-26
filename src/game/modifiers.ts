@@ -16,12 +16,24 @@ export function can_play(game: Game, modifier: Modifier, player: Player): boolea
 }
 
 export class ModifierEndTurn implements Modifier {
+    protected action_points: Map<Player, number>
+
+    constructor() {
+        this.action_points = new Map()
+    }
+
     apply(game: Game) {
         game.turn += 1
+        this.action_points.set('Player1', game.rules.max_ap)
+        this.action_points.set('Player2', game.rules.max_ap)
+        game.action_points.set('Player1', game.rules.max_ap)
+        game.action_points.set('Player2', game.rules.max_ap)
     }
 
     rollback(game: Game) {
         game.turn -= 1
+        game.action_points.set('Player1', this.action_points.get('Player1'))
+        game.action_points.set('Player2', this.action_points.get('Player2'))
     }
 
     is_allowed(_game: Game): boolean {
