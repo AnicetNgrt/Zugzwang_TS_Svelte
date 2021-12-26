@@ -107,24 +107,32 @@
 </script>
 
 <div class="flex flex-col gap-3">
-    <div class="flex justify-between gap-3">
+    <div class="flex justify-center items-end gap-2">
+        <div class="pr-2 text-red-400/50 font-sans flex flex-col">
+            <div class="h-5 text-xl">turn</div>
+            <div class="flex mt-1">
+                <div class="text-xl mr-1">
+                    n°
+                </div>
+                <div class="font-serif text-5xl w-14">
+                    { $session.game.turn < 10 ? '0'+$session.game.turn : $session.game.turn }
+                </div>
+            </div>
+        </div>
+        <PanelButton disabled={!can_end_turn} class="h-14 flex items-center px-6" on_click={try_end_turn}>
+            <h1 class="text-3xl group-hover:text-red-700 text-red-800/70">end turn</h1>
+        </PanelButton>
+        <PanelButton disabled={!can_undo} class="h-10 flex items-center px-6" on_click={try_undo}>
+            <h1 class="text-xl group-hover:text-red-700 text-red-800/70">undo</h1>
+        </PanelButton>
+    </div>
+    <Board id="board"/>
+    <div class="flex justify-center gap-3">
         <PawnBox 
             id="Player1-pb"
             ids={$session.game.pawns.filter(p => p.owner == 'Player1').map(p => p.id)}
             min={$session.game.rules.max_pawn_per_player}
         />
-        <div class="flex justify-center items-center gap-2">
-            {#if can_end_turn}
-                <PanelButton class="h-14 flex items-center px-6" on_click={try_end_turn}>
-                    <h1 class="text-2xl font-light group-hover:text-red-700 text-red-800/70">end turn</h1>
-                </PanelButton>
-            {/if}
-            {#if can_undo}
-                <PanelButton class="h-14 flex items-center px-6" on_click={try_undo}>
-                    <h1 class="text-2xl font-light group-hover:text-red-700 text-red-800/70">undo</h1>
-                </PanelButton>
-            {/if}
-        </div>
         <PawnBox 
             id="Player2-pb" 
             ids={$session.game.pawns.filter(p => p.owner == 'Player2').map(p => p.id)} 
@@ -132,7 +140,6 @@
             revert
         />
     </div>
-    <Board id="board"/>
 </div>
 
 {#each $session.game.pawns as {id}}

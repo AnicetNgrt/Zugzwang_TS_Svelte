@@ -40,7 +40,7 @@ export type Player = 'Player1' | 'Player2'
 export type Entity = Player | 'Gaia'
 
 export function is_current_player(game: Game, player: Player): boolean {
-    if (game.turn % 2 == 0 && player != 'Player1') return false
-    if (game.turn % 2 == 1 && player != 'Player2') return false
+    if (game.turn % 2 == 1 && player != 'Player1') return false
+    if (game.turn % 2 == 0 && player != 'Player2') return false
     return true
 }

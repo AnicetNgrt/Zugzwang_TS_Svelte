@@ -10,7 +10,7 @@ export function new_game(rules: Rules): Game {
         rules,
         board: new_board(rules.width, rules.height),
         pawns: new Array(),
-        turn: -1
+        turn: 0
     }
 }
 
