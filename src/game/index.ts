@@ -10,7 +10,8 @@ export function new_game(rules: Rules): Game {
         board: new_board(rules.width, rules.height),
         pawns: new Array(),
         turn: 0,
-        action_points: new Map([['Player1', 0], ['Player2', 0]])
+        action_points: new Map([['Player1', 0], ['Player2', 0]]),
+        cards: new Map()
     }
 }
 

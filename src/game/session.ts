@@ -13,7 +13,7 @@ export interface GameSession {
 }
 
 export interface PlayerMetadata {
-    name: string
+    readonly name: string
 }
 
 export function update_selector(s: GameSession, updater: (_: Selector) => Selector): GameSession {
@@ -77,29 +77,38 @@ export class Selectable {
 }
 
 export interface Selector {
-    on_finished(callback: (selected: SelectedTree) => void)
+    on_finished(callback: (selected: SelectedTree) => void): void
     get_callback(): (selected: SelectedTree) => void
     is_finished(): boolean
     is_empty(): boolean
-    is_candidate(session: GameSession, el: Selectable): boolean
+    is_candidate: SelectableFilter
     is_selected(session: GameSession, el: Selectable): boolean
     toggle(session: GameSession, el: Selectable): boolean
 }
 
-export class SimpleSelector implements Selector {
+export type SelectableFilter = (session: GameSession, el: Selectable) => boolean
+
+export class InlineSelector implements Selector {
+    constructor(
+        public on_finished: (callback: (selected: SelectedTree) => void) => void,
+        public get_callback: () => (selected: SelectedTree) => void,
+        public is_finished: () => boolean,
+        public is_empty: () => boolean,
+        public is_candidate: (session: GameSession, el: Selectable) => boolean,
+        public is_selected: (session: GameSession, el: Selectable) => boolean,
+        public toggle: (session: GameSession, el: Selectable) => boolean
+    ) {}
+}
+
+export class AmountSelector implements Selector {
     protected selected: Selectable[]
 
     constructor(
-        protected type: SelectableType,
         protected max: number,
-        protected is_candidate_middleware: (session: GameSession, el: Selectable) => boolean,
-        protected callback: (selected: SelectedTree) => void = _ => {}
+        protected callback: (selected: SelectedTree) => void = _ => {},
+        public is_candidate: SelectableFilter
     ) {
         this.selected = []
-    }
-
-    is_candidate(session: GameSession, el: Selectable): boolean {
-        return el.get_type() == this.type && this.is_candidate_middleware(session, el)
     }
 
     is_empty(): boolean {
@@ -138,30 +147,12 @@ export class SimpleSelector implements Selector {
     }
 }
 
-export class DummySelector implements Selector {
-    get_callback(): (selected: SelectedTree) => void {
-        return _ => {}
+export class DummySelector extends AmountSelector {
+    constructor() {
+        super(0, _ => {}, (_a, _b) => false)
     }
-
-    on_finished(_callback: (selected: SelectedTree) => void) {}
 
     is_finished(): boolean {
-        return false
-    }
-
-    is_empty(): boolean {
-        return true
-    }
-
-    is_candidate(_session: GameSession, _el: null): boolean {
-        return false
-    }
-
-    is_selected(_session: GameSession, _el: null): boolean {
-        return false
-    }
-
-    toggle(_session: GameSession, _el: null): boolean {
         return false
     }
 }
@@ -270,37 +261,55 @@ export class ChainedSelector implements Selector {
     }
 }
 
+export function type_filter(type: SelectableType): SelectableFilter {
+    return (_session: GameSession, el: Selectable): boolean => {
+        return el.get_type() == type
+    }
+}
+
+export function middlewares_filter(filters: SelectableFilter[]) {
+    return (session: GameSession, el: Selectable): boolean => {
+        return !filters.some(f => f(session, el) == false)
+    }
+}
+
 export function place_pawn(callback: (modifier: ModifierPlacePawn) => void): Selector {
     let selected_pawn_id: number
     let selected_tile: Tile
     
     return new ChainedSelector(
         [
-            new SimpleSelector(
-                'Pawn', 1,
-                (session, el) => {
-                    const pawn = el.as_pawn()
-                    if (pawn.owner == 'Gaia') return false
-                    return is_current_player(session.game, pawn.owner)
-                        && session.player == pawn.owner
-                        && pawn.state == 'Staging'
-                },
+            new AmountSelector(
+                1,
                 (selected_tree) => {
                     if (selected_tree.type != 'Leaf') return
                     selected_pawn_id = selected_tree.items[0].as_pawn().id
-                }
-            ),
-            new SimpleSelector(
-                'Tile', 1,
-                (session, el) => {
-                    const tile = el.as_tile()
-                    const modifier = new ModifierPlacePawn(selected_pawn_id, { x: tile.x, y: tile.y })
-                    return modifier.is_allowed(session.game) && modifier.is_playable(session.game, session.player)
                 },
+                middlewares_filter([
+                    type_filter('Pawn'),
+                    (session, el) => {
+                        const pawn = el.as_pawn()
+                        if (pawn.owner == 'Gaia') return false
+                        return is_current_player(session.game, pawn.owner)
+                            && session.player == pawn.owner
+                            && pawn.state == 'Staging'
+                    }
+                ])
+            ),
+            new AmountSelector(
+                1,
                 (selected_tree) => {
                     if (selected_tree.type != 'Leaf') return
                     selected_tile = selected_tree.items[0].as_tile()
-                }
+                },
+                middlewares_filter([
+                    type_filter('Tile'),
+                    (session, el) => {
+                        const tile = el.as_tile()
+                        const modifier = new ModifierPlacePawn(selected_pawn_id, { x: tile.x, y: tile.y })
+                        return modifier.is_allowed(session.game) && modifier.is_playable(session.game, session.player)
+                    }
+                ])
             ),
         ],
         (_) => {

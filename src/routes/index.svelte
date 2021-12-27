@@ -2,6 +2,8 @@
     import Game from "@components/Game.svelte";
     import BackgroundShader from "@components/BackgroundShader.svelte";
 
+	
+
     function hex_to_rgb(hex: string) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? {
@@ -43,7 +45,7 @@
         'rose': hex_to_theme('#FB7185', '#BE123C'),
     }
 
-    const theme = 'red'
+    const theme = 'orange'
 </script>
 
 <BackgroundShader color={tw_themes_bg_colors[theme].color} accent={tw_themes_bg_colors[theme].accent}/>

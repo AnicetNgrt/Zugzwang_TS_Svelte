@@ -1,3 +1,4 @@
+import type { Card } from "./cards"
 import type { Entity, Game, PawnBase, PawnPlaced, PawnStaging, Player, TileBase, TileEmpty, TileOccupied } from "./model"
 import { is_current_player } from "./model"
 
@@ -13,6 +14,15 @@ export function can_play(game: Game, modifier: Modifier, player: Player): boolea
     if (!modifier.is_allowed(game)) return false
     if (!modifier.is_playable(game, player)) return false
     return true
+}
+
+export class InlineModifier implements Modifier {
+    constructor(
+        public apply: (game: Game) => void,
+        public rollback: (game: Game) => void,
+        public is_allowed: (game: Game) => boolean,
+        public is_playable: (game: Game, player: Player) => boolean,
+    ) {}
 }
 
 export class ModifierEndTurn implements Modifier {
@@ -125,7 +135,7 @@ export class ModifierMovePawn implements Modifier {
         protected position: { x: number, y: number }
     ) { }
 
-    is_playable(_game: Game, _player: Player): boolean {
+    is_playable(_game: Game, player: Player): boolean {
         return false
     }
 
@@ -169,4 +179,28 @@ export class ModifierMovePawn implements Modifier {
 
         modifier.apply(game)
     }
+}
+
+export class ModifierGiveCard implements Modifier {
+    constructor(
+        protected card: Card,
+        protected player: Player
+    ) {}
+
+    apply(game: Game) {
+        throw new Error("Method not implemented.")
+    }
+
+    rollback(game: Game) {
+        throw new Error("Method not implemented.")
+    }
+
+    is_allowed(game: Game): boolean {
+        throw new Error("Method not implemented.")
+    }
+    
+    is_playable(game: Game, player: Player): boolean {
+        throw new Error("Method not implemented.")
+    }
+
 }

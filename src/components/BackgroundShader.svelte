@@ -98,7 +98,7 @@
 	})
 </script>
 
-<div id="content-div" bind:clientWidth={w} bind:clientHeight={h} class="content"></div>
+<div id="content-div" bind:clientWidth={w} bind:clientHeight={h} class="content bg-gradient-to-tr from-primary-800 via-primary-700 to-primary-900"></div>
 
 <style>
 	.content {

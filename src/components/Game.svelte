@@ -7,8 +7,7 @@
     import type { Modifier, GameSession } from "@game";
     import StagingPawnsBoxes from "@components/StagingPawnsBoxes.svelte";
     import TurnDashboard from "@components/TurnDashboard.svelte";
-import PlayerPane from "./PlayerPane.svelte";
-import Panel from "./Panel.svelte";
+    import PlayerPane from "@components/PlayerPane.svelte";
     
     const game = new_game({
         width: 15,
