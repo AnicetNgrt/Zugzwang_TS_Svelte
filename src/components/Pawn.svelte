@@ -11,8 +11,8 @@
     
     let pawn: Pawn
 
-    let div_pos = tweened({ x: window.innerWidth/2, y: -1000 }, { duration: 500, easing: quartInOut })
-    let destination_div_pos = { x: window.innerWidth/2, y: -1000 }
+    let div_pos = tweened({ x: -1000, y: -1000 }, { duration: 500, easing: quartInOut })
+    let destination_div_pos = { x: -1000, y: -1000 }
     let tile_id = ''
     
     let selectable = false
@@ -44,7 +44,11 @@
         })
     }
 
-    onMount(() => session.subscribe(on_session_update))
+    onMount(() => {
+        div_pos = tweened({ x: window.innerWidth/2, y: -1000 }, { duration: 500, easing: quartInOut })
+        destination_div_pos = { x: window.innerWidth/2, y: -1000 }
+        session.subscribe(on_session_update)
+    })
 
     let owner_color = {
         'Player1': 'from-zinc-400 to-zinc-50',

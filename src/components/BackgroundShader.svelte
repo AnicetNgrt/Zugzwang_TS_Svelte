@@ -9,7 +9,7 @@
     let w
     let h
 
-	onMount(async () => {
+	onMount(() => {
         const renderer = new Renderer({
             width: w,
             height: h,
