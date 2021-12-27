@@ -11,7 +11,7 @@
     
     let pawn: Pawn
 
-    let div_pos = tweened({ x: window.innerWidth/2, y: -1000 }, { duration: 1000, easing: quartInOut })
+    let div_pos = tweened({ x: window.innerWidth/2, y: -1000 }, { duration: 500, easing: quartInOut })
     let destination_div_pos = { x: window.innerWidth/2, y: -1000 }
     let tile_id = ''
     

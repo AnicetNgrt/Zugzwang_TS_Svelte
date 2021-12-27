@@ -33,6 +33,6 @@
   "type": "module",
   "dependencies": {
     "@mszu/pixi-ssr-shim": "^1.0.1",
-    "pixi.js": "^6.2.1"
+    "ogl": "^0.0.77"
   }
 }
