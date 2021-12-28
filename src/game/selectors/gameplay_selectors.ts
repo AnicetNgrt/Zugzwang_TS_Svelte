@@ -1,6 +1,7 @@
-import { filters, type Selector, filter_pawns_owned_by_session_player_if_current, filter_as_pawns, ChainedSelector, filter_tiles_if_session_player_can_play, OnePawnSelector, OneTileSelector } from "."
+import { filters, type Selector, filter_pawns_owned_by_session_player_if_current, filter_as_pawns, ChainedSelector, filter_tiles_if_session_player_can_play, OnePawnSelector, OneTileSelector, OrSelector } from "."
 import { ModifierMovePawn, ModifierPlacePawn } from "../gameplay_modifiers"
 import type { Tile, Pawn } from "../model"
+import type { Modifier } from "../modifiers"
 import type { GameSession } from "../session"
 
 export function select_one_currently_playable_pawn_if(
@@ -33,7 +34,7 @@ export function move_pawn_selector(callback: (modifier: ModifierMovePawn) => voi
                 )
             ),
         ],
-        (_) => {
+        _ => {
             const modifier = new ModifierMovePawn(
                 selected_pawn_id, 
                 { x: selected_tile.x, y: selected_tile.y }
@@ -60,12 +61,22 @@ export function place_pawn_selector(callback: (modifier: ModifierPlacePawn) => v
                 )
             ),
         ],
-        (_) => {
+        _ => {
             const modifier = new ModifierPlacePawn(
                 selected_pawn_id, 
                 { x: selected_tile.x, y: selected_tile.y }
             )
             callback(modifier)
         }
+    )
+}
+
+export function play_selector(callback: (modifier: Modifier) => void): Selector {
+    return new OrSelector(
+        [
+            place_pawn_selector(callback),
+            move_pawn_selector(callback),
+        ],
+        (_) => {}
     )
 }

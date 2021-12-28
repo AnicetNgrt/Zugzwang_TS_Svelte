@@ -12,7 +12,7 @@ module.exports = {
         'mono': ['RX100', 'monospace']
       },
       colors: {
-        primary: colors.warmGray
+        primary: colors.neutral
       }
     },
   },

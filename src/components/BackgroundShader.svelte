@@ -86,7 +86,7 @@
                 vec3 water = smoothstep(0., 0.8, lam)*vec3(color*1.);
                 vec3 shiny = (vec3(smoothstep(0.9, 1., lam))*accent_color*0.25);
                 
-                gl_FragColor = vec4(water+shiny, 1.0);
+                gl_FragColor = vec4((color*0.6)+water+shiny, 1.0);
             }`,
             uniforms: {
                 uTime: {value: 0},
