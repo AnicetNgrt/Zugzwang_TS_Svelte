@@ -1,5 +1,10 @@
+<script context="module" lang="ts">
+	//export const prerender = true;
+	export const ssr = false;
+</script>
+
 <script>
-    import {Renderer, Geometry, Program, Mesh} from 'ogl';
+    import { Renderer, Geometry, Program, Mesh } from 'ogl';
 
 	import { onMount } from 'svelte'
 
@@ -9,10 +14,14 @@
     let w
     let h
 
+    let fps
+    let dpr = 0.5
+
 	onMount(() => {
         const renderer = new Renderer({
             width: w,
             height: h,
+            dpr: dpr
         });
         const gl = renderer.gl;
         document.getElementById('content-div').appendChild(gl.canvas);
@@ -86,10 +95,42 @@
 
         const mesh = new Mesh(gl, {geometry, program});
 
+        let times = [];
+        let last_balance = performance.now()
+
         requestAnimationFrame(update);
         function update(t) {
             requestAnimationFrame(update);
 
+            while (times.length > 0 && times[0] <= t - 1000) {
+                times.shift();
+            }
+            times.push(t);
+            fps = times.length;
+
+            if (t - last_balance >= 1000) {
+                last_balance = t
+                let new_dpr = renderer.dpr
+                if (fps < 30) {
+                    new_dpr = Math.max(0.1, renderer.dpr * 0.8)
+                }
+                if (fps > 35) {
+                    new_dpr = Math.min(1, renderer.dpr * 1.05)
+                }
+                if (fps > 40) {
+                    new_dpr = Math.min(1, renderer.dpr * 1.1)
+                }
+                if (fps > 60) {
+                    new_dpr = Math.min(1, renderer.dpr * 1.2)
+                }
+                if (new_dpr != renderer.dpr) {
+                    dpr = new_dpr
+                    renderer.dpr = new_dpr
+                    renderer.setSize(w, h)
+                    console.log(`${fps} fps => balancing to ${w*renderer.dpr}x${h*renderer.dpr}`)
+                }
+            }
+            
             program.uniforms.uTime.value = t * 0.001;
 
             // Don't need a camera if camera uniforms aren't required
@@ -99,9 +140,14 @@
 </script>
 
 <div id="content-div" bind:clientWidth={w} bind:clientHeight={h} class="content bg-gradient-to-tr from-primary-800 via-primary-700 to-primary-900"></div>
+<div class="fixed top-2 left-2 flex flex-col font-mono text-xs text-primary-500">
+    <span>{fps}</span>
+    <span>{Math.round(dpr*100)/100}</span>
+</div>
 
 <style>
 	.content {
+        animation: fadeIn 3s;
 		position: fixed;
 		width: 100%;
         height: 100%;
@@ -113,6 +159,11 @@
 		flex-direction: column;
 		flex: auto;
 	}
+
+    @keyframes fadeIn {
+        0% {opacity:0;}
+        100% {opacity:1;}
+    }
 
     /* :global(canvas) {
         image-rendering: pixelated;

@@ -24,8 +24,8 @@ const config = {
 				}
 			},
 			ssr: {
-				noExternal: ['ogl']
-			}		
+				noExternal: ["ogl"],
+			},
 		}
 	}
 };
