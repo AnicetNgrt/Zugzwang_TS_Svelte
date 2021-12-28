@@ -1,5 +1,5 @@
 import { Archetype } from "../cards";
-import { DummySelector } from "../session";
+import { DummySelector } from "../selectors";
 
 export default new Archetype(
     'Small rivers',

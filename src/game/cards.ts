@@ -1,7 +1,7 @@
 import SmallRivers from "./cards/SmallRivers";
 import type { Player } from "./model";
 import type { Modifier } from "./modifiers";
-import type { Selector } from "./session";
+import type { SelectedTree, Selector } from "./selectors";
 
 export interface Card {
     readonly id: number
@@ -14,7 +14,7 @@ export class Archetype {
     constructor(
         public readonly name: string,
         public readonly recyclable: boolean,
-        public readonly modifier: Modifier,
+        public readonly modifier_factory: (selected_tree: SelectedTree) => Modifier,
         public readonly selector: Selector
     ) {}
 }

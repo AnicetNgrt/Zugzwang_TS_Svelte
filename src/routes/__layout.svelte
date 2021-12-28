@@ -2,6 +2,8 @@
     import '../app.css';
 </script>
 
-<main class="bg-gradient-to-tr from-primary-800 via-primary-700 to-primary-900">
-    <slot />
+<main class="bg-primary-700">
+    <div class="bg-gradient-to-l from-primary-500/50 via-primary-700/70 to-primary-900/60">
+        <slot />
+    </div>
 </main>

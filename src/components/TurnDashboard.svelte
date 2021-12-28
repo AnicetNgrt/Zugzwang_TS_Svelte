@@ -38,7 +38,7 @@ import Panel from "./Panel.svelte";
 <div class="flex w-full justify-between">
     <div class="flex justify-center items-end gap-2">
         <div class="ml-2 text-primary-400/50 font-sans flex items-center">
-            <div class={"mt-3 mr-2 -mb-1.5 font-serif text-7xl " + ($session.game.turn % 2 == 0 ? " text-black/60" : " text-white/50")}>
+            <div class={"mt-3 mr-2 -mb-1.5 font-serif text-7xl " + ($session.game.turn % 2 == 0 ? " text-black/90" : " text-white/50")}>
                 { $session.game.action_points.get('Player1') }
             </div>
             <div class="flex flex-col">
@@ -52,7 +52,7 @@ import Panel from "./Panel.svelte";
                 <div class="text-xl mr-1">
                     n°
                 </div>
-                <div class={"font-serif text-5xl w-14" + ($session.game.turn % 2 == 0 ? " text-black/60" : " text-white/50")}>
+                <div class={"font-serif text-5xl w-14" + ($session.game.turn % 2 == 0 ? " text-black/90" : " text-white/50")}>
                     { $session.game.turn < 10 ? '0'+$session.game.turn : $session.game.turn }
                 </div>
             </div>

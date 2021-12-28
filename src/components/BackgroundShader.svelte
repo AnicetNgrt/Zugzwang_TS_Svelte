@@ -62,7 +62,7 @@
 
             void main()
             {
-                float zoom = 1.4;
+                float zoom = 2.;
                 float t = ((uTime*0.1)*zoom)/2.;
                 vec2 uv = vUv;
                 uv = (2.*uv) - vec2(1.);
@@ -72,10 +72,10 @@
                 vec3 accent_color = vec3(${accent.r}./255., ${accent.g}./255., ${accent.b}./255.);
                 
                 vec3 tangent = vec3(0.);
-                float h = wave(uv, tangent, -t, PI/2. - PI*t/30., 0.3, 1.*zoom, 0.1)
-                    + wave(uv, tangent, t, PI/3.5 - PI*t/30., 0.4, 0.4*zoom, 10.)
-                    + wave(uv, tangent, t, PI/4. - PI*t/30., 0.8, 0.7*zoom, 2.)
-                    + wave(uv, tangent, -t, PI/4.5 - PI*t/30., 1., 2.*zoom, 7.);
+                float h = wave(uv, tangent, -t, PI/2. - PI*t/30., 0.6, 1.*zoom, 0.1)
+                    + wave(uv, tangent, t, PI/3.5 - PI*t/30., 0.8, 0.4*zoom, 10.)
+                    + wave(uv, tangent, t, PI/4. - PI*t/30., 1.6, 0.7*zoom, 2.)
+                    + wave(uv, tangent, -t, PI/4.5 - PI*t/30., 2., 2.*zoom, 7.);
 
                 vec3 n = vec3(-tangent.y, tangent.x, 0);
                 
@@ -83,8 +83,8 @@
                 vec3 lpos = vec3(cos(t)*1., 2., sin(t)*1.);
                 float lam = smoothstep(0., 2., dot(n, normalize(lpos-p)));
                 
-                vec3 water = smoothstep(-1., 0.4, lam)*vec3(color*0.7);
-                vec3 shiny = (vec3(smoothstep(0.9, 1., lam))*accent_color*0.1);
+                vec3 water = smoothstep(0., 0.8, lam)*vec3(color*1.);
+                vec3 shiny = (vec3(smoothstep(0.9, 1., lam))*accent_color*0.25);
                 
                 gl_FragColor = vec4(water+shiny, 1.0);
             }`,
@@ -112,16 +112,16 @@
                 last_balance = t
                 let new_dpr = renderer.dpr
                 if (fps < 30) {
-                    new_dpr = Math.max(0.1, renderer.dpr * 0.8)
+                    new_dpr = Math.max(0.25, renderer.dpr * 0.8)
                 }
                 if (fps > 35) {
-                    new_dpr = Math.min(1, renderer.dpr * 1.05)
+                    new_dpr = Math.min(0.4, renderer.dpr * 1.2)
                 }
                 if (fps > 40) {
-                    new_dpr = Math.min(1, renderer.dpr * 1.1)
+                    new_dpr = Math.min(0.5, renderer.dpr * 1.2)
                 }
                 if (fps > 60) {
-                    new_dpr = Math.min(1, renderer.dpr * 1.2)
+                    new_dpr = Math.min(0.6, renderer.dpr * 1.2)
                 }
                 if (new_dpr != renderer.dpr) {
                     dpr = new_dpr
@@ -139,7 +139,7 @@
 	})
 </script>
 
-<div id="content-div" bind:clientWidth={w} bind:clientHeight={h} class="content bg-gradient-to-tr from-primary-800 via-primary-700 to-primary-900"></div>
+<div id="content-div" bind:clientWidth={w} bind:clientHeight={h} class="content bg-transparent"></div>
 <div class="fixed top-2 left-2 flex flex-col font-mono text-xs text-primary-500">
     <span>{fps}</span>
     <span>{Math.round(dpr*100)/100}</span>
@@ -158,11 +158,12 @@
 		display: flex;
 		flex-direction: column;
 		flex: auto;
+        opacity:0.3;
 	}
 
     @keyframes fadeIn {
         0% {opacity:0;}
-        100% {opacity:1;}
+        100% {opacity:0.3;}
     }
 
     /* :global(canvas) {
