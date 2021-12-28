@@ -3,7 +3,7 @@
     import { Writable, writable } from "svelte/store";
     import { onMount, setContext } from "svelte";
     import Pawn from "@components/Pawn.svelte";
-    import { apply, DummySelector, ModifierAddPawn, ModifierEndTurn, new_game, place_pawn, update_selector } from "@game";
+    import { apply, DummySelector, ModifierAddPawn, ModifierEndTurn, new_game, play_selector, update_selector } from "@game";
     import type { Modifier, GameSession } from "@game";
     import StagingPawnsBoxes from "@components/StagingPawnsBoxes.svelte";
     import TurnDashboard from "@components/TurnDashboard.svelte";
@@ -27,10 +27,10 @@
         ])
     })
 
-    function place_pawn_cycle() {
-        const selector = place_pawn(modifier => {
+    function play_cycle() {
+        const selector = play_selector(modifier => {
             $session = apply($session, modifier)
-            setTimeout(place_pawn_cycle, 100)
+            setTimeout(play_cycle, 100)
         })
         $session = update_selector($session, _ => selector)
     }
@@ -41,8 +41,7 @@
     }
     $session = apply($session, new ModifierEndTurn())
 
-
-    onMount(place_pawn_cycle)
+    onMount(play_cycle)
 
     setContext('mainGame', session)
 </script>

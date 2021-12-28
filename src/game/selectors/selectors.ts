@@ -1,43 +1,7 @@
-import { type Tile, type Pawn, is_current_player } from "./model"
-import { ModifierPlacePawn } from "./modifiers"
-import type { GameSession } from "./session"
-
-type SelectableObject = null | Tile | Pawn
-type SelectableType = 'null' | 'Tile' | 'Pawn'
-
-export type SelectedTree = SelectedTreeLeaf | SelectedTreeRoot
-
-interface SelectedTreeLeaf { type: 'Leaf', items: Selectable[] }
-interface SelectedTreeRoot { type: 'Root', children: SelectedTree[] }
-
-export class Selectable {
-    constructor(
-        protected object: SelectableObject,
-        protected type: SelectableType
-    ) {}
-
-    get_type(): SelectableType {
-        return this.type
-    }
-
-    as_tile(): Tile {
-        return this.type == 'Tile' ? this.object as Tile : null
-    }
-
-    as_pawn(): Pawn {
-        return this.type == 'Pawn' ? this.object as Pawn : null
-    }
-
-    equals(selectable: Selectable): boolean {
-        if (selectable.type != this.type) return false
-        if (this.type == 'Pawn') return (this.object as Pawn).id == (selectable.object as Pawn).id
-        if (this.type == 'Tile') {
-            const { x: xA, y: yA } = this.object as Tile
-            const { x: xB, y: yB } = selectable.object as Tile
-            return xA == xB && yA == yB
-        }
-    }
-}
+import type { SelectedTree, SelectableFilter, Selectable, SelectedTreeRoot } from "."
+import { filters, filter_pawns, filter_tiles  } from "."
+import type { Tile, Pawn } from "../model"
+import type { GameSession } from "../session"
 
 export interface Selector {
     on_finished(callback: (selected: SelectedTree) => void): void
@@ -48,8 +12,6 @@ export interface Selector {
     is_selected(session: GameSession, el: Selectable): boolean
     toggle(session: GameSession, el: Selectable): boolean
 }
-
-export type SelectableFilter = (session: GameSession, el: Selectable) => boolean
 
 export class InlineSelector implements Selector {
     constructor(
@@ -68,7 +30,7 @@ export class AmountSelector implements Selector {
 
     constructor(
         protected max: number,
-        protected callback: (selected: SelectedTree) => void = _ => {},
+        protected callback: (selected: SelectedTree) => void,
         public is_candidate: SelectableFilter
     ) {
         this.selected = []
@@ -103,10 +65,21 @@ export class AmountSelector implements Selector {
                 this.selected.pop()
             }
             this.selected.push(el)
-            if (this.is_finished()) this.callback({ type: "Leaf", items: this.selected })
+            if (this.is_finished()) {
+                this.callback({ type: "Leaf", items: this.selected })
+            }
             return true
         }
         return false
+    }
+}
+
+export class OnceSelector extends AmountSelector {
+    constructor(
+        callback: (selected: SelectedTree) => void,
+        is_candidate: SelectableFilter
+    ) {
+        super(1, callback, is_candidate)
     }
 }
 
@@ -117,6 +90,66 @@ export class DummySelector extends AmountSelector {
 
     is_finished(): boolean {
         return false
+    }
+}
+
+export class OrSelector implements Selector {
+    protected currents: number[]
+    protected initial_callbacks: ((selected: SelectedTree) => void)[]
+
+    constructor(
+        protected selectors: Selector[],
+        callback: (selected_tree: SelectedTree) => void
+    ) {
+        this.currents = [...selectors.keys()]
+        this.initial_callbacks = selectors.map(selector => selector.get_callback())
+        this.on_finished(callback)
+    }
+
+    on_finished(callback: (selected: SelectedTree) => void): void {
+        this.selectors.forEach((selector, i) => {
+            selector.on_finished(selected_tree => {
+                this.initial_callbacks[i](selected_tree)
+                callback(selected_tree)
+            }) 
+        })
+    }
+
+    get_callback(): (selected: SelectedTree) => void {
+        return this.selectors[0].get_callback()
+    }
+
+    is_finished(): boolean {
+        return this.currents.length == 1 && this.selectors[this.currents[0]].is_finished()
+    }
+
+    is_empty(): boolean {
+        return this.currents.every(i => this.selectors[i].is_empty())
+    }
+
+    is_candidate(session: GameSession, el: Selectable): boolean {
+        return this.currents.some(i => this.selectors[i].is_candidate(session, el))
+    }
+
+    is_selected(session: GameSession, el: Selectable): boolean {
+        return this.currents.length == 1 && this.selectors[this.currents[0]].is_selected(session, el)
+    }
+
+    toggle(session: GameSession, el: Selectable): boolean {
+        if (this.currents.length == 1) {
+            let toggled = this.selectors[this.currents[0]].toggle(session, el)
+            if (this.selectors[this.currents[0]].is_empty()) {
+                this.currents = [...this.selectors.keys()]
+            }
+            return toggled
+        } else {
+            let id = this.currents.find(i => this.selectors[i].is_candidate(session, el))
+            if (id !== undefined) {
+                this.currents = [id]
+                return this.toggle(session, el)
+            }
+            return false
+        }
     }
 }
 
@@ -224,63 +257,32 @@ export class ChainedSelector implements Selector {
     }
 }
 
-export function type_filter(type: SelectableType): SelectableFilter {
-    return (_session: GameSession, el: Selectable): boolean => {
-        return el.get_type() == type
+export class OneTileSelector extends OnceSelector {
+    constructor(
+        callback: (selected_tile: Tile) => void,
+        tile_filter: SelectableFilter
+    ) {
+        super((selected_tree: SelectedTree) => {
+            if (selected_tree.type != 'Leaf') return
+            callback(selected_tree.items[0].as_tile())
+        }, filters([
+            filter_tiles,
+            tile_filter
+        ]))
     }
 }
 
-export function middlewares_filter(filters: SelectableFilter[]) {
-    return (session: GameSession, el: Selectable): boolean => {
-        return !filters.some(f => f(session, el) == false)
+export class OnePawnSelector extends OnceSelector {
+    constructor(
+        callback: (selected_pawn: Pawn) => void,
+        pawn_filter: SelectableFilter
+    ) {
+        super((selected_tree: SelectedTree) => {
+            if (selected_tree.type != 'Leaf') return
+            callback(selected_tree.items[0].as_pawn())
+        }, filters([
+            filter_pawns,
+            pawn_filter
+        ]))
     }
-}
-
-export function place_pawn(callback: (modifier: ModifierPlacePawn) => void): Selector {
-    let selected_pawn_id: number
-    let selected_tile: Tile
-    
-    return new ChainedSelector(
-        [
-            new AmountSelector(
-                1,
-                (selected_tree) => {
-                    if (selected_tree.type != 'Leaf') return
-                    selected_pawn_id = selected_tree.items[0].as_pawn().id
-                },
-                middlewares_filter([
-                    type_filter('Pawn'),
-                    (session, el) => {
-                        const pawn = el.as_pawn()
-                        if (pawn.owner == 'Gaia') return false
-                        return is_current_player(session.game, pawn.owner)
-                            && session.player == pawn.owner
-                            && pawn.state == 'Staging'
-                    }
-                ])
-            ),
-            new AmountSelector(
-                1,
-                (selected_tree) => {
-                    if (selected_tree.type != 'Leaf') return
-                    selected_tile = selected_tree.items[0].as_tile()
-                },
-                middlewares_filter([
-                    type_filter('Tile'),
-                    (session, el) => {
-                        const tile = el.as_tile()
-                        const modifier = new ModifierPlacePawn(selected_pawn_id, { x: tile.x, y: tile.y })
-                        return modifier.is_allowed(session.game) && modifier.is_playable(session.game, session.player)
-                    }
-                ])
-            ),
-        ],
-        (_) => {
-            const modifier = new ModifierPlacePawn(
-                selected_pawn_id, 
-                { x: selected_tile.x, y: selected_tile.y }
-            )
-            callback(modifier)
-        }
-    )
 }

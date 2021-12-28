@@ -2,6 +2,7 @@ import type { Board, Game, Rules, Tile } from "./model"
 
 export * from './model'
 export * from './modifiers'
+export * from './gameplay_modifiers'
 export * from './session'
 export * from './selectors'
 

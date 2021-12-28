@@ -43,7 +43,7 @@
         'rose': hex_to_theme('#FB7185', '#BE123C'),
     }
 
-    const theme = 'orange'
+    const theme = 'red'
 </script>
 
 <BackgroundShader color={tw_themes_bg_colors[theme].color} accent={tw_themes_bg_colors[theme].accent}/>

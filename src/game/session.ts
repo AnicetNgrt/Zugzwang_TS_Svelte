@@ -1,6 +1,6 @@
+import { ModifierEndTurn } from "./gameplay_modifiers"
 import type { Game, Player } from "./model"
 import type { Modifier } from "./modifiers"
-import { ModifierEndTurn } from "./modifiers"
 import type { Selector } from "./selectors"
 
 export interface GameSession {

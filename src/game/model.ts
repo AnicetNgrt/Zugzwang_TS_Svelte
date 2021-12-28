@@ -35,6 +35,8 @@ export type Pawn = PawnBase &
         | PawnPlaced
     )
 
+export type PawnState = "Dead" | "Staging" | "Placed"
+
 export interface PawnBase { readonly id: number, owner: Entity }
 export interface PawnDead { state: 'Dead' }
 export interface PawnStaging { state: 'Staging' }
