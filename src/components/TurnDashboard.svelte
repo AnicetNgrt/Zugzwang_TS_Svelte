@@ -45,7 +45,7 @@ import Panel from "./Panel.svelte";
         </PanelButton>
     </div>
     <div class="flex gap-3 items-baseline mt-3 md:self-end">
-        <p class={"flex flex-col items-end text-md text-white/40"}>
+        <p class={"flex flex-col items-end text-md text-white/60"}>
             <span class={"h-4 font-bold"}>
                 {$session.players_metadata.get('Player1').name}
             </span>
@@ -53,10 +53,10 @@ import Panel from "./Panel.svelte";
                 <span class="text-sm">playing...</span>
             {/if}
         </p>
-        <span class="text-xs text-primary-400/60">
+        <span class="text-xs text-primary-400/80">
             VS
         </span>
-        <p class={"flex flex-col text-md text-black/70"}>
+        <p class={"flex flex-col text-md text-black/90"}>
             <span class={"h-4 font-bold"}>
                 {$session.players_metadata.get('Player2').name}
             </span>

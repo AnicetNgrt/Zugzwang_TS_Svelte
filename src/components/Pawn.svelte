@@ -84,7 +84,7 @@
     style={`top: ${$div_pos.y}px; left: ${$div_pos.x}px;`}
     on:click={try_select}
     >
-        <div class={"w-7 sm:w-9 h-7 sm:h-9 flex justify-center items-center transition-all rounded-full bg-gradient-to-t shadow-md shadow-black/20 text-blue-600 box-content " + owner_color[pawn.owner] + ( moving ? " scale-110 z-10 shadow-xl shadow-black/30" : "" ) + (selectable ? " cursor-pointer" : " cursor-not-allowed") + (selected ? " scale-110 z-10 shadow-xl shadow-black/30 opacity-100" : " opacity-80") + (!selected && selectable ? " ring-4 ring-primary-400/50" : "") }>
+        <div class={"w-7 sm:w-9 h-7 sm:h-9 flex justify-center items-center transition-all rounded-full bg-gradient-to-t shadow-md shadow-black/20 text-blue-600 box-content " + owner_color[pawn.owner] + ( moving ? " scale-110 z-10 shadow-xl shadow-black/30" : "" ) + (selectable ? " cursor-pointer" : " cursor-not-allowed") + (selected ? " scale-110 z-10 shadow-xl shadow-black/30 opacity-100" : " opacity-80") + (!selected && selectable ? " ring-4 ring-accent-300/50" : "") }>
             <!-- {moving} -->
         </div>
     </div>

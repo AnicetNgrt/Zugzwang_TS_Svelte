@@ -12,7 +12,8 @@ module.exports = {
         'mono': ['RX100', 'monospace']
       },
       colors: {
-        primary: colors.gray
+        primary: colors.stone,
+        accent: colors.amber
       }
     },
   },

@@ -17,6 +17,8 @@
     let fps
     let dpr = 0.5
 
+    let start_t = performance.now()
+
 	onMount(() => {
         const renderer = new Renderer({
             width: w,
@@ -89,7 +91,7 @@
                 gl_FragColor = vec4((color*0.6)+water+shiny, 1.0);
             }`,
             uniforms: {
-                uTime: {value: 0},
+                uTime: {value: start_t},
             },
         });
 
@@ -131,7 +133,7 @@
                 }
             }
             
-            program.uniforms.uTime.value = t * 0.001;
+            program.uniforms.uTime.value = start_t + t * 0.001;
 
             // Don't need a camera if camera uniforms aren't required
             renderer.render({scene: mesh});
@@ -161,12 +163,12 @@
 		display: flex;
 		flex-direction: column;
 		flex: auto;
-        opacity:0.3;
+        opacity:0.5;
 	}
 
     @keyframes fadeIn {
         0% {opacity:0;}
-        100% {opacity:0.3;}
+        100% {opacity:0.5;}
     }
 
     /* :global(canvas) {

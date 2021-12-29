@@ -43,18 +43,18 @@
         'rose': hex_to_theme('#FB7185', '#BE123C'),
     }
 
-    const theme = 'sky'
+    const theme = 'orange'
 </script>
 
 <BackgroundShader color={tw_themes_bg_colors[theme].color} accent={tw_themes_bg_colors[theme].accent}/>
 <div class="hidden lg:block absolute w-full h-full">
     <div class="grid grid-cols-2 gap-4 place-content-between px-4 py-3 w-full h-full z-10">
         <div class="col-start-2 flex flex-col items-end">
-            <h1 class="text-2xl font-extrabold text-primary-400/50">ZUGZWANG</h1>
+            <h1 class="text-2xl font-extrabold text-accent-400/50">ZUGZWANG</h1>
         </div>
         <div class="col-start-1 row-start-2 flex flex-col">
-            <h1 class="text-xs font-sans text-primary-400/90">version pre-alpha</h1>
-            <h1 class="text-xs font-sans text-primary-400/90">2018 - 2022 @ Anicet Nougaret</h1>
+            <h1 class="text-xs font-sans text-accent-400/90">version pre-alpha</h1>
+            <h1 class="text-xs font-sans text-accent-400/90">2018 - 2022 @ Anicet Nougaret</h1>
         </div>
     </div>
 </div>
