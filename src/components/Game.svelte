@@ -46,15 +46,13 @@
     setContext('mainGame', session)
 </script>
 
-<div class="flex flex-col w-full items-center">
+<div class="flex flex-col max-w-full items-center">
     <div class="flex gap-3 justify-center">
-        <PlayerPane player={'Player1'}/>
-        <div class="flex flex-col gap-3 items-center">
+        <div class="flex flex-col gap-3 items-center max-w-full">
             <TurnDashboard/>
             <Board id="board"/>
             <StagingPawnsBoxes/>
         </div>
-        <PlayerPane player={'Player2'}/>
     </div>
 </div>
 

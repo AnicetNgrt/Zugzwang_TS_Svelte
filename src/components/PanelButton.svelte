@@ -6,6 +6,6 @@
     export let disabled = false
 </script>
 
-<div on:click={on_click} class={className + " group backdrop-blur-md rounded-full bg-primary-400/40 shadow-xl border-b-2 border-b-primary-800/50 shadow-primary-900/20 cursor-pointer hover:bg-primary-400/60 hover:border-b-primary-600/70 hover:shadow-primary-900/50 hover:scale-105 active:scale-100 transition-all select-none" + (disabled ? " opacity-40 pointer-events-none cursor-not-allowed" : "")}>
+<div on:click={on_click} class={className + " min-w-fit group backdrop-blur-md rounded-full bg-primary-400/40 shadow-xl border-b-2 border-b-primary-800/50 shadow-primary-900/20 cursor-pointer hover:bg-primary-400/60 hover:border-b-primary-600/70 hover:shadow-primary-900/50 hover:scale-105 active:scale-100 transition-all select-none" + (disabled ? " opacity-40 pointer-events-none cursor-not-allowed" : "")}>
     <slot/>
 </div>

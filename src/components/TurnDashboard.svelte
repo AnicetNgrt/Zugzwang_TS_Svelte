@@ -35,36 +35,16 @@ import Panel from "./Panel.svelte";
     }
 </script>
 
-<div class="flex w-full justify-between">
-    <div class="flex justify-center items-end gap-2">
-        <div class="ml-2 text-primary-400/50 font-sans flex items-center">
-            <div class={"mt-3 mr-2 -mb-1.5 font-serif text-7xl " + ($session.game.turn % 2 == 0 ? " text-black/90" : " text-white/50")}>
-                { $session.game.action_points.get('Player1') }
-            </div>
-            <div class="flex flex-col">
-                <div class="h-5 text-xl">action</div>
-                <div class="mb-2 text-xl">points</div>
-            </div>
-        </div>
-        <div class="mx-4 pt-3 text-primary-400/50 font-sans flex flex-col">
-            <div class="h-4 text-xl">turn</div>
-            <div class="flex mt-1">
-                <div class="text-xl mr-1">
-                    n°
-                </div>
-                <div class={"font-serif text-5xl w-14" + ($session.game.turn % 2 == 0 ? " text-black/90" : " text-white/50")}>
-                    { $session.game.turn < 10 ? '0'+$session.game.turn : $session.game.turn }
-                </div>
-            </div>
-        </div>
-        <PanelButton disabled={!can_end_turn} class="h-14 flex items-center px-6" on_click={try_end_turn}>
-            <h1 class="text-3xl group-hover:text-primary-800 text-primary-900/90">end turn</h1>
+<div class="flex mx-3 sm:mx-5 md:mx-10 max-w-full md:w-full justify-center md:justify-between flex-wrap-reverse md:flex-nowrap gap-x-3 gap-y-3">
+    <div class="flex gap-3">
+        <PanelButton disabled={!can_end_turn} class="self-end h-10 flex items-center px-6" on_click={try_end_turn}>
+            <h1 class="text-md md:text-xl group-hover:text-primary-800 text-primary-900/90">end turn</h1>
         </PanelButton>
-        <PanelButton disabled={!can_undo} class="h-10 flex items-center px-6" on_click={try_undo}>
-            <h1 class="text-xl group-hover:text-primary-800 text-primary-900/90">undo</h1>
+        <PanelButton disabled={!can_undo} class="self-end h-10 flex items-center px-6" on_click={try_undo}>
+            <h1 class="text-md md:text-xl group-hover:text-primary-800 text-primary-900/90">undo</h1>
         </PanelButton>
     </div>
-    <div class="flex gap-3 items-baseline self-end">
+    <div class="flex gap-3 items-baseline mt-3 md:self-end">
         <p class={"flex flex-col items-end text-md text-white/40"}>
             <span class={"h-4 font-bold"}>
                 {$session.players_metadata.get('Player1').name}
@@ -73,7 +53,7 @@ import Panel from "./Panel.svelte";
                 <span class="text-sm">playing...</span>
             {/if}
         </p>
-        <span class="text-xs font-serif text-primary-400/60">
+        <span class="text-xs text-primary-400/60">
             VS
         </span>
         <p class={"flex flex-col text-md text-black/70"}>

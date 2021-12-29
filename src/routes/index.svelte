@@ -43,21 +43,21 @@
         'rose': hex_to_theme('#FB7185', '#BE123C'),
     }
 
-    const theme = 'amber'
+    const theme = 'sky'
 </script>
 
 <BackgroundShader color={tw_themes_bg_colors[theme].color} accent={tw_themes_bg_colors[theme].accent}/>
-<div class="absolute w-screen h-screen">
-    <div class="grid grid-cols-2 gap-4 place-content-between p-4 w-full h-full z-10">
+<div class="hidden lg:block absolute w-full h-full">
+    <div class="grid grid-cols-2 gap-4 place-content-between px-4 py-3 w-full h-full z-10">
         <div class="col-start-2 flex flex-col items-end">
-            <h1 class="text-2xl font-serif text-primary-400/75">ZUGZWANG</h1>
-            <h1 class="text-sm font-sans text-primary-400/80">a game by Anicet Nougaret</h1>
+            <h1 class="text-2xl font-extrabold text-primary-400/50">ZUGZWANG</h1>
         </div>
         <div class="col-start-1 row-start-2 flex flex-col">
-            <h1 class="text-md font-sans text-primary-400/80">version pre-alpha</h1>
+            <h1 class="text-xs font-sans text-primary-400/90">version pre-alpha</h1>
+            <h1 class="text-xs font-sans text-primary-400/90">2018 - 2022 @ Anicet Nougaret</h1>
         </div>
     </div>
 </div>
-<div class="relative top-0 left-0 w-screen min-h-screen flex flex-col justify-center items-center z-10">
+<div class="pb-3 w-full min-h-full flex flex-col justify-center items-center z-10">
     <Game/>
 </div>

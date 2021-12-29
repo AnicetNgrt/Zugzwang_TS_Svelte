@@ -19,9 +19,9 @@
     })
 </script>
 
-<Panel class="flex flex-col p-3">
+<Panel class="flex md:flex-col p-3">
 {#each board as row}
-    <div class="flex">
+    <div class="flex flex-col md:flex-row">
     {#each row as tile}
         <Tile position={{x: tile.x, y: tile.y}} id={id_prefix + "-" + tile.x + "-" + tile.y}/>
     {/each}

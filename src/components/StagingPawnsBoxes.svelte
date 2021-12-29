@@ -7,7 +7,7 @@
     const session: Writable<GameSession> = getContext('mainGame')
 </script>
 
-<div class="flex w-full justify-between gap-3">
+<div class="flex max-w-full justify-between gap-3">
     <PawnBox 
         id="Player1-pb"
         ids={$session.game.pawns.filter(p => p.owner == 'Player1').map(p => p.id)}
