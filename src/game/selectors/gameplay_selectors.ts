@@ -1,6 +1,7 @@
-import { filters, type Selector, filter_pawns_owned_by_session_player_if_current, filter_as_pawns, ChainedSelector, filter_tiles_if_session_player_can_play, OnePawnSelector, OneTileSelector, OrSelector } from "."
-import { ModifierMovePawn, ModifierPlacePawn } from "../gameplay_modifiers"
-import type { Tile, Pawn } from "../model"
+import { type Selector, OnePawnSelector, filters, filter_pawns_owned_by_session_player_if_current, filter_as_pawns, ChainedSelector, OneTileSelector, filter_tiles_if_session_player_can_play, MergeSelector, OrSelector, DummySelector } from "."
+import type { CardStack } from "../cards"
+import { ModifierConsumeCard, ModifierMovePawn, ModifierPlacePawn, ModifierPlayCard } from "../gameplay_modifiers"
+import type { Tile, Pawn, Game, Player } from "../model"
 import type { Modifier } from "../modifiers"
 import type { GameSession } from "../session"
 
@@ -44,6 +45,34 @@ export function move_pawn_selector(callback: (modifier: ModifierMovePawn) => voi
     )
 }
 
+function first_selectable_card_id(card_stack: CardStack, game: Game, player: Player) {
+    return card_stack.stack.find(card_id => {
+        const card = game.cards.get(card_id)
+        const modifier = new ModifierConsumeCard(card.id)
+        return modifier.is_allowed(game)
+            && modifier.is_playable(game, player)
+    })
+}
+
+export function displacement_cards_selector(session: GameSession, callback: (modifier: ModifierPlayCard) => void): Selector {
+    let selectors = session.game.card_stacks
+        .get(session.player)
+        .map(card_stack => first_selectable_card_id(card_stack, session.game, session.player))
+        .filter(card_id => card_id != undefined)
+        .map(card_id => session.game.cards.get(card_id))
+        .map(card => card.rebuild_selector(() => {
+            console.log(`Playing card ${card.id}`)
+            callback(new ModifierPlayCard(card.id))
+        }))
+    
+    if (selectors.length < 1) return new DummySelector()
+    
+    return new MergeSelector(
+        selectors, 
+        _ => {}
+    )
+}
+
 export function place_pawn_selector(callback: (modifier: ModifierPlacePawn) => void): Selector {
     let selected_pawn_id: number
     let selected_tile: Tile
@@ -71,11 +100,11 @@ export function place_pawn_selector(callback: (modifier: ModifierPlacePawn) => v
     )
 }
 
-export function play_selector(callback: (modifier: Modifier) => void): Selector {
+export function play_selector(session: GameSession, callback: (modifier: Modifier) => void): Selector {
     return new OrSelector(
         [
             place_pawn_selector(callback),
-            move_pawn_selector(callback),
+            displacement_cards_selector(session, callback)
         ],
         (_) => {}
     )

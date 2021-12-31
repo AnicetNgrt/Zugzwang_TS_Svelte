@@ -1,7 +1,8 @@
+import type { Card } from "../cards"
 import type { Pawn, Tile } from "../model"
 
-export type SelectableObject = null | Tile | Pawn
-export type SelectableType = 'null' | 'Tile' | 'Pawn'
+export type SelectableObject = null | Tile | Pawn | Card
+export type SelectableType = 'null' | 'Tile' | 'Pawn' | 'Card'
 
 export type SelectedTree = SelectedTreeLeaf | SelectedTreeRoot
 

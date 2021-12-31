@@ -129,7 +129,7 @@
                     dpr = new_dpr
                     renderer.dpr = new_dpr
                     renderer.setSize(w, h)
-                    console.log(`${fps} fps => balancing to ${w*renderer.dpr}x${h*renderer.dpr}`)
+                    // console.log(`${fps} fps => balancing to ${w*renderer.dpr}x${h*renderer.dpr}`)
                 }
             }
             

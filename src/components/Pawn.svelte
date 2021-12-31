@@ -71,8 +71,7 @@
 
     let owner_color = {
         'Player1': 'from-zinc-400 to-zinc-50',
-        'Player2': 'from-black to-slate-800',
-        'Gaia': 'from-gray-700 to-gray-500',
+        'Player2': 'from-black to-slate-800'
     }
 
     $: moving = destination_div_pos.x != $div_pos.x || destination_div_pos.y != $div_pos.y

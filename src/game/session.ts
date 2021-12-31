@@ -30,7 +30,6 @@ export function apply(s: GameSession, modifier: Modifier): GameSession {
 }
 
 export function rollback(s: GameSession): GameSession {
-    console.log(s.done[s.done.length-1])
     if (s.done.length > 0 && !(s.done[s.done.length-1] instanceof ModifierEndTurn)) {
         s.done.pop().rollback(s.game)
         return s

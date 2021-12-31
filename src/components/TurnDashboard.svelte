@@ -23,8 +23,8 @@ import Panel from "./Panel.svelte";
 
     function try_end_turn() {
         if (can_end_turn) {
-            $session = apply($session, new ModifierEndTurn())
             $session = { ...$session, player: $session.player == 'Player1' ? 'Player2' : 'Player1' }
+            $session = apply($session, new ModifierEndTurn())
         }
     }
 
@@ -35,7 +35,7 @@ import Panel from "./Panel.svelte";
     }
 </script>
 
-<div class="flex mx-3 sm:mx-5 md:mx-10 max-w-full md:w-full justify-center md:justify-between flex-wrap-reverse md:flex-nowrap gap-x-3 gap-y-3">
+<div class="flex mx-3 sm:mx-5 md:mx-10 max-w-full md:w-full justify-center flex-wrap-reverse md:flex-nowrap gap-x-3 gap-y-3">
     <div class="flex gap-3">
         <PanelButton disabled={!can_end_turn} class="self-end h-10 flex items-center px-6" on_click={try_end_turn}>
             <h1 class="text-md md:text-xl group-hover:text-primary-800 text-primary-900/90">end turn</h1>
@@ -43,26 +43,5 @@ import Panel from "./Panel.svelte";
         <PanelButton disabled={!can_undo} class="self-end h-10 flex items-center px-6" on_click={try_undo}>
             <h1 class="text-md md:text-xl group-hover:text-primary-800 text-primary-900/90">undo</h1>
         </PanelButton>
-    </div>
-    <div class="flex gap-3 items-baseline mt-3 md:self-end">
-        <p class={"flex flex-col items-end text-md text-white/60"}>
-            <span class={"h-4 font-bold"}>
-                {$session.players_metadata.get('Player1').name}
-            </span>
-            {#if is_current_player($session.game, 'Player1')}
-                <span class="text-sm">playing...</span>
-            {/if}
-        </p>
-        <span class="text-xs text-primary-400/80">
-            VS
-        </span>
-        <p class={"flex flex-col text-md text-black/90"}>
-            <span class={"h-4 font-bold"}>
-                {$session.players_metadata.get('Player2').name}
-            </span>
-            {#if is_current_player($session.game, 'Player2')}
-                <span class="text-sm">...playing</span>
-            {/if}
-        </p>
     </div>
 </div>

@@ -5,6 +5,8 @@ export * from './modifiers'
 export * from './gameplay_modifiers'
 export * from './session'
 export * from './selectors'
+export * from './cards'
+export * from './archetypes'
 
 export function new_game(rules: Rules): Game {
     return {
@@ -13,7 +15,8 @@ export function new_game(rules: Rules): Game {
         pawns: new Array(),
         turn: 0,
         action_points: new Map([['Player1', 0], ['Player2', 0]]),
-        cards: new Map()
+        cards: new Map(),
+        card_stacks: new Map([['Player1', []], ['Player2', []]])
     }
 }
 

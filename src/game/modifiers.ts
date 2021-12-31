@@ -1,5 +1,4 @@
-import type { Card } from "./cards"
-import type { Entity, Game, PawnBase, PawnPlaced, PawnStaging, Player, TileBase, TileEmpty, TileOccupied } from "./model"
+import type { Game, Player } from "./model"
 import { is_current_player } from "./model"
 
 export interface Modifier {

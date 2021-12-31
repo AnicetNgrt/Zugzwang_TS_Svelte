@@ -35,7 +35,7 @@
 
 <div 
     {id} 
-    class={"w-8 sm:w-11 h-8 sm:h-11 flex m-0.5 rounded-sm items-center justify-center select-none transition-all duration-100" + (selectable ? " cursor-pointer" : " cursor-default") + (selectable && !selected ? " bg-primary-200/10 hover:bg-accent-300/30" : "")} 
+    class={"w-8 sm:w-11 h-8 sm:h-11 flex m-0.5 rounded-sm items-center justify-center select-none transition-all duration-300 hover:duration-100" + (selectable ? " cursor-pointer" : " cursor-default") + (selectable && !selected ? " bg-primary-200/10 hover:bg-accent-300/30" : "")} 
     on:click={try_select}
 >
     <div class={"rounded-sm text-primary-900/50 text-2xl"}>

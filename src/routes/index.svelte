@@ -43,7 +43,7 @@
         'rose': hex_to_theme('#FB7185', '#BE123C'),
     }
 
-    const theme = 'orange'
+    const theme = 'amber'
 </script>
 
 <BackgroundShader color={tw_themes_bg_colors[theme].color} accent={tw_themes_bg_colors[theme].accent}/>
@@ -53,7 +53,7 @@
             <h1 class="text-2xl font-extrabold text-accent-400/50">ZUGZWANG</h1>
         </div>
         <div class="col-start-1 row-start-2 flex flex-col">
-            <h1 class="text-xs font-sans text-accent-400/90">version pre-alpha</h1>
+            <h1 class="text-xs font-sans text-accent-400/90">version dev_0.1</h1>
             <h1 class="text-xs font-sans text-accent-400/90">2018 - 2022 @ Anicet Nougaret</h1>
         </div>
     </div>

@@ -4,8 +4,7 @@ import type { Tile, Pawn } from "../model"
 import type { GameSession } from "../session"
 
 export interface Selector {
-    on_finished(callback: (selected: SelectedTree) => void): void
-    get_callback(): (selected: SelectedTree) => void
+    on_finished(callback: (selected: SelectedTree) => void, first?: boolean): void
     is_finished(): boolean
     is_empty(): boolean
     is_candidate: SelectableFilter
@@ -27,25 +26,27 @@ export class InlineSelector implements Selector {
 
 export class AmountSelector implements Selector {
     protected selected: Selectable[]
+    protected callbacks: ((selected: SelectedTree) => void)[]
 
     constructor(
         protected max: number,
-        protected callback: (selected: SelectedTree) => void,
+        callback: (selected: SelectedTree) => void,
         public is_candidate: SelectableFilter
     ) {
         this.selected = []
+        this.callbacks = [callback]
     }
 
     is_empty(): boolean {
         return this.selected.length == 0
     }
 
-    on_finished(callback: (selected: SelectedTree) => void) {
-        this.callback = callback
-    }
-
-    get_callback(): (selected: SelectedTree) => void {
-        return this.callback
+    on_finished(callback: (selected: SelectedTree) => void, first?: boolean) {
+        if (first) {
+            this.callbacks = [callback, ...this.callbacks]
+        } else {
+            this.callbacks.push(callback)
+        }
     }
 
     is_finished(): boolean {
@@ -66,7 +67,9 @@ export class AmountSelector implements Selector {
             }
             this.selected.push(el)
             if (this.is_finished()) {
-                this.callback({ type: "Leaf", items: this.selected })
+                this.callbacks.forEach(
+                    callback => callback({ type: "Leaf", items: this.selected })
+                )
             }
             return true
         }
@@ -95,28 +98,21 @@ export class DummySelector extends AmountSelector {
 
 export class OrSelector implements Selector {
     protected currents: number[]
-    protected initial_callbacks: ((selected: SelectedTree) => void)[]
 
     constructor(
         protected selectors: Selector[],
         callback: (selected_tree: SelectedTree) => void
     ) {
         this.currents = [...selectors.keys()]
-        this.initial_callbacks = selectors.map(selector => selector.get_callback())
         this.on_finished(callback)
     }
 
-    on_finished(callback: (selected: SelectedTree) => void): void {
-        this.selectors.forEach((selector, i) => {
-            selector.on_finished(selected_tree => {
-                this.initial_callbacks[i](selected_tree)
+    on_finished(callback: (selected: SelectedTree) => void, first?: boolean): void {
+        this.selectors.forEach(
+            selector => selector.on_finished(selected_tree => {
                 callback(selected_tree)
-            }) 
-        })
-    }
-
-    get_callback(): (selected: SelectedTree) => void {
-        return this.selectors[0].get_callback()
+            }, first)
+        )
     }
 
     is_finished(): boolean {
@@ -153,12 +149,62 @@ export class OrSelector implements Selector {
     }
 }
 
+export class MergeSelector implements Selector {
+
+    constructor(
+        protected selectors: Selector[],
+        callback: (selected_tree: SelectedTree) => void
+    ) {
+        this.on_finished(callback)
+    }
+
+    on_finished(callback: (selected: SelectedTree) => void, first?: boolean): void {
+        this.selectors.forEach((selector, i) => {
+            selector.on_finished(selected_tree => {
+                callback(selected_tree)
+            }, first)
+        })
+    }
+
+    is_finished(): boolean {
+        return this.selectors.some(selector => selector.is_finished())
+    }
+
+    is_empty(): boolean {
+        return this.selectors.every(selector => selector.is_empty())
+    }
+
+    is_candidate(session: GameSession, el: Selectable): boolean {
+        return this.selectors.some(selector => selector.is_candidate(session, el))
+    }
+
+    is_selected(session: GameSession, el: Selectable): boolean {
+        return this.selectors.some(selector => selector.is_selected(session, el))
+    }
+
+    toggle(session: GameSession, el: Selectable): boolean {
+        let toggled_once = false
+        
+        this.selectors.forEach(selector => {
+            if (selector.is_candidate(session, el)) {
+                if (selector.toggle(session, el)) {
+                    toggled_once = true
+                    if (selector.is_finished()) {
+                        return true
+                    }
+                }
+            }
+        })
+
+        return toggled_once
+    }
+}
+
 export class ChainedSelector implements Selector {
     protected previous: Selector
     protected current: Selector
     protected current_id: number
     protected selected_tree: SelectedTreeRoot
-    protected final_chain_initial_callback: (selected: SelectedTree) => void
 
     constructor(
         protected chain: Selector[],
@@ -176,27 +222,15 @@ export class ChainedSelector implements Selector {
         }
         
         for (let i = 0; i < chain.length-1; i++) {
-            const initial_callback = chain[i].get_callback()
             chain[i].on_finished(selected_tree => {
-                initial_callback(selected_tree)
-                this.previous = chain[i]
-                this.current = chain[i+1]
-                this.current_id = i+1
+                if (i == this.current_id) {
+                    this.previous = chain[i]
+                    this.current = chain[i+1]
+                    this.current_id = i+1
+                }
                 this.selected_tree.children[i] = selected_tree
-            
-                chain[i].on_finished(selected_tree => {
-                    initial_callback(selected_tree)
-                    if (i == this.current_id) {
-                        this.previous = chain[i]
-                        this.current = chain[i+1]
-                        this.current_id = i+1
-                    }
-                    this.selected_tree.children[i] = selected_tree
-                })
             })
         }
-
-        this.final_chain_initial_callback = this.chain[this.chain.length-1].get_callback()
         this.on_finished(callback)
     }
 
@@ -215,16 +249,11 @@ export class ChainedSelector implements Selector {
         return this.current.is_candidate(session, el)
     }
 
-    on_finished(callback: (selected_tree: SelectedTree) => void) {
+    on_finished(callback: (selected_tree: SelectedTree) => void, first?: boolean) {
         this.chain[this.chain.length-1].on_finished(selected_tree => {
-            this.final_chain_initial_callback(selected_tree)
             this.selected_tree.children[this.chain.length-1] = selected_tree
             callback(this.selected_tree)
-        })
-    }
-
-    get_callback(): (selected: SelectedTree) => void {
-        return this.chain[this.chain.length-1].get_callback()
+        }, first)
     }
 
     is_finished(): boolean {
