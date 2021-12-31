@@ -8,9 +8,12 @@
 
 	import { onMount } from 'svelte'
 
-    export let color
-    export let accent
-	
+    export let colors
+    export let theme
+
+    let color
+    let accent
+
     let w
     let h
 
@@ -19,13 +22,16 @@
 
     let start_t = performance.now()
 
-	onMount(() => {
+    let mounted = false
+
+    function load_shader() {
         const renderer = new Renderer({
             width: w,
             height: h,
             dpr: dpr
         });
         const gl = renderer.gl;
+        document.getElementById('content-div').innerHTML = ""
         document.getElementById('content-div').appendChild(gl.canvas);
 
         // Triangle that covers viewport, with UVs that still span 0 > 1 across viewport
@@ -141,7 +147,20 @@
 
         window.addEventListener('resize', _ => renderer.setSize(w, h))
         window.addEventListener('scroll', _ => renderer.setSize(w, h))
-	})
+	}
+
+    theme.subscribe(new_theme => {
+        color = colors[new_theme].color
+        accent = colors[new_theme].accent
+        if (mounted) {
+            load_shader()
+        }
+    })
+
+	onMount(() => {
+        mounted = true
+        load_shader()
+    })
 </script>
 
 <div id="content-div" bind:clientWidth={w} bind:clientHeight={h} class="content bg-transparent"></div>
