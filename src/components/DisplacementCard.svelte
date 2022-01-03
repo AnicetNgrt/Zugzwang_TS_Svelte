@@ -56,7 +56,7 @@
 {#if card}
 <div 
 class={"flex w-fit select-none shadow-primary-800/40 opacity-100 cursor-pointer hover:shadow-lg" + (card.used ? " opacity-40" : "") + (stack_index > 0 ? " opacity-60" : "") + (toggled ? " opacity-100 z-10" : "")}
-on:click={() => toggled_card.update(tc => card == tc ? null : card)}
+on:click={() => toggled_card.update(tc => tc ? (card.id == tc.id ? null : card) : card)}
 >
     <div class={"w-7 flex flex-grow px-0.5 bg-accent-800/40 items-center justify-center rounded-l-sm"}>
         <h2 class="text-accent-400/80 font-bold text-md">
