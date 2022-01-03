@@ -165,8 +165,8 @@
 
 <div id="content-div" bind:clientWidth={w} bind:clientHeight={h} class="content bg-transparent"></div>
 <div class="fixed top-2 left-2 flex flex-col font-mono text-xs text-primary-500">
-    <!-- <span>{fps}</span>
-    <span>{Math.round(dpr*100)/100}</span> -->
+    <span>{fps}</span>
+    <span>{Math.round(dpr*100)/100}</span>
 </div>
 
 <style>
