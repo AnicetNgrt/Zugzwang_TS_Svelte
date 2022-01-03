@@ -45,7 +45,7 @@
 
     const colors = Object.keys(tw_themes_bg_colors)
 
-    let theme = writable('pink')
+    let theme = writable('orange')
 </script>
 
 <BackgroundShader colors={tw_themes_bg_colors} {theme}/>
