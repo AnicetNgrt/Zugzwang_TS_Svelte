@@ -34,5 +34,4 @@ const Knight = new ArchetypeDisplacement(
 
 export const StackKnight = new ArchetypeStack([
     Knight,
-    Knight,
 ], 0)

@@ -1,9 +1,8 @@
 <script lang="ts">
-    import { ArchetypeDisplacement, Card, CardStack, GameSession, is_current_player, Player, PlayerMetadata } from "@game";
+    import { Archetype, ArchetypeDisplacement, Card, CardStack, GameSession, is_current_player, Player, PlayerMetadata } from "@game";
     import { getContext, onMount } from "svelte";
     import { writable, Writable } from "svelte/store";
-    import DisplacementCard from "@components/DisplacementCard.svelte";
-import type { subscribe } from "svelte/internal";
+    import CardToggle from "@components/CardToggle.svelte";
 
     const session: Writable<GameSession> = getContext('mainGame')
 
@@ -12,7 +11,10 @@ import type { subscribe } from "svelte/internal";
     let player_metadata: PlayerMetadata
     let ap: number
     let is_playing: boolean
-    let card_stacks: CardStack[] = []
+
+    type UICardStack = Array<{ id: number, amount_usable: number, amount_used: number }>
+
+    let ui_card_stacks: UICardStack[] = []
     let mounted = false
 
     let toggled_card: Writable<Card> = writable(null)
@@ -29,7 +31,32 @@ import type { subscribe } from "svelte/internal";
         player_metadata = session.players_metadata.get(player)
         ap = session.game.action_points.get(player)
         is_playing = is_current_player(session.game, player)
-        card_stacks = session.game.card_stacks.get(player)
+
+        ui_card_stacks = session.game.card_stacks.get(player).map(({stack}) => {
+                let ui_card_stack: UICardStack = new Array()
+                let previous_archetype: Archetype = null
+                let top_used = true
+                for (const card_id of stack) {
+                    const card = session.game.cards.get(card_id)
+                    if (card.archetype == previous_archetype && card.used) {
+                        ui_card_stack[ui_card_stack.length-1].amount_used += 1
+                    } else if (card.archetype == previous_archetype) {
+                        ui_card_stack[ui_card_stack.length-1].amount_usable += 1
+                    } else {
+                        ui_card_stack.push({
+                            id: card.id, 
+                            amount_usable: card.used ? 0 : 1, 
+                            amount_used: card.used ? 1 : 0,
+                        })
+                    }
+                    if (top_used) {
+                        ui_card_stack[ui_card_stack.length-1].id = card.id
+                        top_used == card.used
+                    }
+                    previous_archetype = card.archetype
+                }
+                return ui_card_stack
+            })
     }
 
     toggled_card.subscribe(toggled_card => {
@@ -54,10 +81,10 @@ import type { subscribe } from "svelte/internal";
         <p class={"text-lg leading-4 mb-1 w-min" + (ap > 0 ? " text-accent-400/80" : " text-accent-400/40") }>action points</p>
     </div>
     <div class="flex gap-1 w-full h-fit mt-2">
-        {#each card_stacks as {stack}}
+        {#each ui_card_stacks as stack}
             <div class={"flex flex-col bg-primary-400/20 p-2 items-center w-1/2 h-fit gap-1 rounded-sm" + (player == 'Player1' ? "  border-white/10" : "  border-black/10")}>
-                {#each stack as id, i}
-                    <DisplacementCard {toggled_card} stack_index={i} {id}/>
+                {#each stack as {id, amount_usable, amount_used}, i}
+                    <CardToggle {toggled_card} stack_index={i} {id} {amount_usable} {amount_used}/>
                 {/each}
             </div>
         {/each}
@@ -66,7 +93,7 @@ import type { subscribe } from "svelte/internal";
     <div class="flex flex-col mt-4 pt-0.5 bg-accent-800/40 text-accent-400/80 rounded-sm w-full">
         <div class="flex gap-2 items-center">
             <div class="flex w-8 h-8 justify-center items-center">
-                <h1 class="text-xl font-bold">
+                <h1 class="text-xl font-bold text-accent-300/90">
                     {$toggled_card.archetype.action_points_cost}
                 </h1>
             </div>
@@ -79,7 +106,7 @@ import type { subscribe } from "svelte/internal";
             <div class="flex">
                 {#each line as in_pattern, x}
                     <div class={"w-8 h-8 m-0.5 flex justify-center items-center" + (in_pattern ? " bg-primary-300/40" : " ") + (x == 3 && y == 3 ? " rounded-full bg-accent-800/40" : " rounded-sm")}>
-                        <div class="rounded-sm text-primary-900/50 text-md">
+                        <div class="rounded-sm text-primary-900/50 text-lg">
                             +
                         </div>
                     </div>

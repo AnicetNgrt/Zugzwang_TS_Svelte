@@ -61,7 +61,7 @@
             <h1 class="text-xs font-sans text-accent-400/90">version dev_0.1</h1>
             <h1 class="text-xs font-sans text-accent-400/90">2018 - 2022 @ Anicet Nougaret</h1>
         </div>
-        <div class="col-start-2 row-start-2 w-16 flex gap-2 flex-wrap-reverse justify-end justify-self-end z-10">
+        <div class="col-start-2 row-start-2 w-36 flex gap-2 flex-wrap-reverse justify-end justify-self-end z-10">
             {#each colors as color}
                 <div 
                     class="w-3 h-3 rounded-full hover:shadow-md hover:shadow-black/10"
