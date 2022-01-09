@@ -1,4 +1,4 @@
-import { type Selector, OnePawnSelector, filters, filter_pawns_owned_by_session_player_if_current, filter_as_pawns, ChainedSelector, OneTileSelector, filter_tiles_if_session_player_can_play, MergeSelector, OrSelector, DummySelector } from "."
+import { type Selector, OnePawnSelector, filters, filter_pawns_owned_by_session_player_if_current, filter_as_pawns, ChainedSelector, OneTileSelector, filter_tiles_if_session_player_can_play, MergeSelector, OrSelector, DummySelector, filter_pawns_owned_by_enemy_of_session_player_if_current } from "."
 import type { CardStack } from "../cards"
 import { ModifierConsumeCard, ModifierMovePawn, ModifierPlacePawn, ModifierPlayCard } from "../gameplay_modifiers"
 import type { Tile, Pawn, Game, Player } from "../model"
@@ -13,6 +13,19 @@ export function select_one_currently_playable_pawn_if(
         callback,
         filters([
             filter_pawns_owned_by_session_player_if_current,
+            filter_as_pawns(predicate)
+        ])
+    )
+}
+
+export function select_one_enemy_pawn_if(
+    predicate: (session: GameSession, pawn: Pawn) => boolean,
+    callback: (pawn: Pawn) => void
+): Selector {
+    return new OnePawnSelector(
+        callback,
+        filters([
+            filter_pawns_owned_by_enemy_of_session_player_if_current,
             filter_as_pawns(predicate)
         ])
     )

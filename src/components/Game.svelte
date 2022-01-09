@@ -3,7 +3,7 @@
     import { Writable, writable } from "svelte/store";
     import { setContext } from "svelte";
     import Pawn from "@components/Pawn.svelte";
-    import { apply, DummySelector, ModifierAddCardStack, ModifierAddPawn, ModifierEndTurn, new_game, play_selector, StackKnight, StackSmallRivers, update_selector } from "@game";
+    import { apply, DummySelector, ModifierAddCardStack, ModifierAddPawn, ModifierEndTurn, new_game, play_selector, StackAttack, StackKnight, StackSmallRivers, update_selector } from "@game";
     import type { Modifier, GameSession } from "@game";
     import TurnDashboard from "@components/TurnDashboard.svelte";
     import BoardBottom from "@components/BoardBottom.svelte";
@@ -35,13 +35,13 @@
     }
     $session = apply($session, new ModifierAddCardStack(StackSmallRivers, 'Player1'))
     $session = apply($session, new ModifierAddCardStack(StackKnight, 'Player1'))
+    $session = apply($session, new ModifierAddCardStack(StackAttack, 'Player1'))
     $session = apply($session, new ModifierAddCardStack(StackSmallRivers, 'Player2'))
     $session = apply($session, new ModifierAddCardStack(StackKnight, 'Player2'))
+    $session = apply($session, new ModifierAddCardStack(StackAttack, 'Player2'))
     $session = apply($session, new ModifierEndTurn())
 
     session.subscribe(updated_session => {
-        console.log(updated_session.player)
-        console.log(updated_session.game.turn)
         if (done_count != updated_session.done.length) {
             const selector = play_selector(updated_session, modifier => {
                 $session = apply($session, modifier)
@@ -69,6 +69,8 @@
     </div>
 </div>
 
-{#each $session.game.pawns as {id}}
-    <Pawn {id}/>
+{#each $session.game.pawns as {state, id}}
+    {#if state != 'Dead'}
+        <Pawn {id}/>
+    {/if}
 {/each}

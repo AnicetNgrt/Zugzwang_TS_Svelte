@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { GameSession, Card, Selectable, Selector, update_selector, type ArchetypeDisplacement } from "@game";
+    import { GameSession, Card, Selectable, Selector, update_selector, type Archetype } from "@game";
     import { getContext, onMount } from "svelte";
     import type { Writable } from "svelte/store";
 
@@ -19,19 +19,11 @@
     let selected = false
 
     let toggled = false
-    let archetype: ArchetypeDisplacement
-    let fake_tiles: Array<Array<boolean>>
-    set_fake_tiles([])
-
-    function set_fake_tiles(pattern: Array<{ x: number, y: number }>) {
-        fake_tiles = [...new Array(7).keys()].map(_ => [...new Array(7).keys()].map(_ => false))
-        pattern.forEach(({x, y}) => fake_tiles[y+3][x+3] = true)
-    }
+    let archetype: Archetype
 
     const on_session_update = (session: GameSession) => {
         card = session.game.cards.get(id)
-        archetype = (card.archetype as ArchetypeDisplacement)
-        set_fake_tiles(archetype.pattern)
+        archetype = card.archetype
 
         selectable = session.selector.is_candidate(session, new Selectable(card, 'Card'))
         selected = session.selector.is_selected(session, new Selectable(card, 'Card'))
@@ -68,19 +60,6 @@ on:click={() => toggled_card.update(tc => tc ? (card.id == tc.id ? null : card) 
         </div>
         <div class={"relative flex items-center justify-center w-24 px-2 py-0.5 flex-col self-center bg-primary-300/30 rounded-tr-sm" + (toggled ? " rounded-l-sm" : "")}>
             <h1 class="text-sm">{archetype.name}</h1>
-            <div class={"my-1.5 flex items-center justify-center w-fit p-2 flex-col self-center bg-primary-400 rounded-sm" + (toggled ? " absolute -top-3 left-3 shadow-lg shadow-primary-800/40" : " hidden")}>
-                {#each fake_tiles as line}
-                <div class="flex">
-                    {#each line as in_pattern}
-                        <div class={"w-4 h-4 flex rounded-full justify-center items-center" + (in_pattern ? " bg-primary-300/50" : " ")}>
-                            <div class="rounded-sm text-primary-700/50 text-xs">
-                                +
-                            </div>
-                        </div>
-                    {/each}
-                </div>
-                {/each}
-            </div>
         </div>
     </div>
     <div class="flex justify-around bg-accent-300/40 gap-1.5 text-accent-900/70 text-xs font-medium px-1 py-0.5 rounded-b-sm">

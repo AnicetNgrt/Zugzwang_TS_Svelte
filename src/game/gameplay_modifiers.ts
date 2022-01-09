@@ -1,5 +1,5 @@
 import { type Archetype, Card, ArchetypeStack, CardStack } from "./cards"
-import type { Player, Game, PawnBase, PawnPlaced, TileBase, TileOccupied, PawnStaging, TileEmpty } from "./model"
+import type { Player, Game, PawnBase, PawnPlaced, TileBase, TileOccupied, PawnStaging, TileEmpty, PawnDead } from "./model"
 import type { Modifier } from "./modifiers"
 
 export class ModifierEndTurn implements Modifier {
@@ -74,6 +74,54 @@ export class ModifierAddPawn implements Modifier {
 
     rollback(game: Game) {
         game.pawns.pop()
+    }
+}
+
+export class ModifierKillPawn implements Modifier {
+    protected occupied_tile: TileBase & TileOccupied
+
+    constructor(
+        protected pawn_id: number,
+    ) { }
+
+    is_playable(_game: Game, _player: Player): boolean {
+        return true
+    }
+
+    is_allowed(game: Game): boolean {
+        return game.pawns[this.pawn_id].state == 'Placed'
+    }
+
+    apply(game: Game) {
+        let { x, y } = (game.pawns[this.pawn_id] as PawnPlaced)
+        this.occupied_tile = game.board[y][x] as TileBase & TileOccupied
+
+        let emptied_tile: TileBase & TileEmpty = {
+            x, y,
+            state: 'Empty'
+        }
+        game.board[y][x] = emptied_tile
+
+        let new_pawn: PawnBase & PawnDead = {
+            state: 'Dead',
+            id: this.pawn_id,
+            owner: game.pawns[this.pawn_id].owner
+        }
+        game.pawns[this.pawn_id] = new_pawn
+    }
+
+    rollback(game: Game) {
+        let { x, y } = this.occupied_tile
+
+        let new_pawn: PawnBase & PawnPlaced = {
+            state: 'Placed',
+            id: this.pawn_id,
+            owner: game.pawns[this.pawn_id].owner,
+            x, y
+        }
+        game.pawns[this.pawn_id] = new_pawn
+
+        game.board[y][x] = this.occupied_tile
     }
 }
 
