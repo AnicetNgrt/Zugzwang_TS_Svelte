@@ -45,6 +45,7 @@ export const Attack = new Archetype(
             ])
         )
     },
+    true
 )
 
 export const StackAttack = new ArchetypeStack([

@@ -54,7 +54,8 @@ export class Archetype {
         public readonly recyclable: boolean,
         public readonly action_points_cost: number,
         public readonly modifier_factory: (selected_tree: SelectedTree) => Modifier,
-        public readonly selector_factory: (callback: () => void) => Selector
+        public readonly selector_factory: (callback: () => void) => Selector,
+        public readonly is_implicit: boolean
     ) {}
 }
 
@@ -109,7 +110,8 @@ export class ArchetypeDisplacement extends Archetype {
                 )
                 
                 return new ChainedSelector([pawn_selector, tile_selector], callback)
-            }
+            },
+            true
         )
     }
 }

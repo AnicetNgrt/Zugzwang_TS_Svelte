@@ -67,12 +67,13 @@ function first_selectable_card_id(card_stack: CardStack, game: Game, player: Pla
     })
 }
 
-export function displacement_cards_selector(session: GameSession, callback: (modifier: ModifierPlayCard) => void): Selector {
+export function implicit_cards_selector(session: GameSession, callback: (modifier: ModifierPlayCard) => void): Selector {
     let selectors = session.game.card_stacks
         .get(session.player)
         .map(card_stack => first_selectable_card_id(card_stack, session.game, session.player))
         .filter(card_id => card_id != undefined)
         .map(card_id => session.game.cards.get(card_id))
+        .filter(card => card.archetype.is_implicit)
         .map(card => card.rebuild_selector(() => {
             console.log(`Playing card ${card.id}`)
             callback(new ModifierPlayCard(card.id))
@@ -117,7 +118,7 @@ export function play_selector(session: GameSession, callback: (modifier: Modifie
     return new OrSelector(
         [
             place_pawn_selector(callback),
-            displacement_cards_selector(session, callback)
+            implicit_cards_selector(session, callback)
         ],
         (_) => {}
     )
