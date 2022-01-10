@@ -1,8 +1,9 @@
 <script lang="ts">
-    import { Archetype, ArchetypeDisplacement, Card, CardStack, GameSession, is_current_player, Player, PlayerMetadata } from "@game";
+    import { Archetype, Card, GameSession, is_current_player, Player, PlayerMetadata } from "@game";
     import { getContext, onMount } from "svelte";
     import { writable, Writable } from "svelte/store";
     import CardToggle from "@components/CardToggle.svelte";
+    import CardDetail from "@components/CardDetail.svelte";
 
     const session: Writable<GameSession> = getContext('mainGame')
 
@@ -18,14 +19,6 @@
     let mounted = false
 
     let toggled_card: Writable<Card> = writable(null)
-
-    let fake_tiles: Array<Array<boolean>>
-    set_fake_tiles([])
-
-    function set_fake_tiles(pattern: Array<{ x: number, y: number }>) {
-        fake_tiles = [...new Array(7).keys()].map(_ => [...new Array(7).keys()].map(_ => false))
-        pattern.forEach(({x, y}) => fake_tiles[y+3][x+3] = true)
-    }
 
     const on_session_update = (session: GameSession) => {
         player_metadata = session.players_metadata.get(player)
@@ -59,15 +52,6 @@
         })
     }
 
-    toggled_card.subscribe(toggled_card => {
-        if (!toggled_card) return
-        if (toggled_card.archetype instanceof ArchetypeDisplacement) {
-            set_fake_tiles(toggled_card.archetype.pattern)
-        } else {
-            fake_tiles = []
-        }
-    })
-
     onMount(() => {
         session.subscribe(on_session_update)
         mounted = true
@@ -94,31 +78,7 @@
         {/each}
     </div>
     {#if $toggled_card}
-    <div class="flex flex-col mt-4 pt-0.5 bg-accent-800/40 text-accent-400/80 rounded-sm w-full">
-        <div class="flex gap-2 items-center">
-            <div class="flex w-8 h-8 justify-center items-center">
-                <h1 class="text-xl font-bold text-accent-300/90">
-                    {$toggled_card.archetype.action_points_cost}
-                </h1>
-            </div>
-            <h1 class="text-xl font-bold">
-                {$toggled_card.archetype.name}
-            </h1>
-        </div>
-        <div class={"flex items-center justify-center w-full rounded-b-sm p-2 flex-col self-center bg-gradient-to-tr from-primary-200/50 to-primary-400/50"}>
-            {#each fake_tiles as line, y}
-            <div class="flex">
-                {#each line as in_pattern, x}
-                    <div class={"w-8 h-8 m-0.5 flex justify-center items-center" + (in_pattern ? " bg-primary-300/40" : " ") + (x == 3 && y == 3 ? " rounded-full bg-accent-800/40" : " rounded-sm")}>
-                        <div class="rounded-sm text-primary-900/50 text-lg">
-                            +
-                        </div>
-                    </div>
-                {/each}
-            </div>
-            {/each}
-        </div>
-    </div>
+        <CardDetail card={$toggled_card}/>
     {/if}
 </div>
 {/if}
