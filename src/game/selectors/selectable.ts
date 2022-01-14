@@ -27,8 +27,13 @@ export class Selectable {
         return this.type == 'Pawn' ? this.object as Pawn : null
     }
 
+    as_card() {
+        return this.type == 'Card' ? this.object as Card : null
+    }
+
     equals(selectable: Selectable): boolean {
         if (selectable.type != this.type) return false
+        if (this.type == 'Card') return (this.object as Card).id == (selectable.object as Card).id
         if (this.type == 'Pawn') return (this.object as Pawn).id == (selectable.object as Pawn).id
         if (this.type == 'Tile') {
             const { x: xA, y: yA } = this.object as Tile

@@ -3,15 +3,13 @@
 
     export let archetype: Archetype
 
-    let fake_tiles: Array<Array<boolean>>
-    if (archetype instanceof ArchetypeDisplacement) {
-        set_fake_tiles(archetype.pattern)   
+    function compute_tiles(pattern: Array<{ x: number, y: number }>) {
+        const tiles = [...new Array(7).keys()].map(_ => [...new Array(7).keys()].map(_ => false))
+        pattern.forEach(({x, y}) => tiles[y+3][x+3] = true)
+        return tiles
     }
 
-    function set_fake_tiles(pattern: Array<{ x: number, y: number }>) {
-        fake_tiles = [...new Array(7).keys()].map(_ => [...new Array(7).keys()].map(_ => false))
-        pattern.forEach(({x, y}) => fake_tiles[y+3][x+3] = true)
-    }
+    $: fake_tiles = archetype instanceof ArchetypeDisplacement ? compute_tiles(archetype.pattern) : null
 </script>
 
 <div class="flex flex-col mt-4 pt-0.5 bg-accent-800/40 text-accent-400/80 rounded-sm w-full">
@@ -25,7 +23,7 @@
             {archetype.name}
         </h1>
     </div>
-    {#if archetype instanceof ArchetypeDisplacement}
+    {#if fake_tiles}
         <div class={"flex items-center justify-center w-full rounded-b-sm p-2 flex-col self-center bg-gradient-to-tr from-primary-200/50 to-primary-400/50"}>
             {#each fake_tiles as line, y}
             <div class="flex">

@@ -1,13 +1,12 @@
 import type { Selectable, SelectableType } from "."
+import type { Card } from "../cards"
 import type { Pawn, Tile } from "../model"
 import type { GameSession } from "../session"
 
 export type SelectableFilter = (session: GameSession, el: Selectable) => boolean
 
 export function type_filter(type: SelectableType): SelectableFilter {
-    return (_session: GameSession, el: Selectable): boolean => {
-        return el.get_type() == type
-    }
+    return (_session: GameSession, el: Selectable): boolean => el.get_type() == type
 }
 
 export function filters(filters: SelectableFilter[]) {
@@ -27,11 +26,20 @@ export function filter_as_pawns(filter: (session: GameSession, pawn: Pawn) => bo
 
 export const filter_pawns: SelectableFilter = type_filter('Pawn')
 
+export const filter_cards: SelectableFilter = type_filter('Card')
+
 export const filter_tiles: SelectableFilter = type_filter('Tile')
 
 export function filter_as_tiles(filter: (session: GameSession, tile: Tile) => boolean): SelectableFilter {
     return (session, el) => {
         const tile = el.as_tile()
         return filter(session, tile)
+    }
+}
+
+export function filter_as_cards(filter: (session: GameSession, card: Card) => boolean): SelectableFilter {
+    return (session, el) => {
+        const card = el.as_card()
+        return filter(session, card)
     }
 }

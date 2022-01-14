@@ -30,7 +30,6 @@
 <div 
 class={"flex flex-col w-fit select-none shadow-primary-800/40 opacity-100 cursor-pointer hover:shadow-lg" + (card.used ? " opacity-40" : "") + (stack_index > 0 ? " opacity-60" : "") + (toggled ? " opacity-100 z-10" : "")}
 on:click={() => toggled_card.update(tc => {
-    console.log(tc ? (card.id == tc.id ? null : card) : card)
     return tc ? (card.id == tc.id ? null : card) : card
 })}
 >

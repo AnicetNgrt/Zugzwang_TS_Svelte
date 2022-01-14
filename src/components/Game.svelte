@@ -3,7 +3,7 @@
     import { Writable, writable } from "svelte/store";
     import { setContext } from "svelte";
     import Pawn from "@components/Pawn.svelte";
-    import { apply, DummySelector, ModifierAddCardStack, ModifierAddPawn, ModifierEndTurn, new_game, play_selector, StackAttack, StackKnight, StackSmallRivers, update_selector } from "@game";
+    import { apply, DummySelector, ModifierAddCardStack, ModifierAddPawn, ModifierEndTurn, ModifierPlacePawn, new_game, play_selector, StackAttack, StackKnight, StackSmallRivers, update_selector } from "@game";
     import type { Modifier, GameSession } from "@game";
     import TurnDashboard from "@components/TurnDashboard.svelte";
     import BoardBottom from "@components/BoardBottom.svelte";
@@ -39,6 +39,12 @@
     $session = apply($session, new ModifierAddCardStack(StackSmallRivers, 'Player2'))
     $session = apply($session, new ModifierAddCardStack(StackKnight, 'Player2'))
     $session = apply($session, new ModifierAddCardStack(StackAttack, 'Player2'))
+    $session = apply($session, new ModifierEndTurn())
+    
+    for (const pawn of $session.game.pawns) {
+        $session = apply($session, new ModifierPlacePawn(pawn.id, { x: pawn.id, y: pawn.id }))
+    }
+    $session = apply($session, new ModifierEndTurn())
     $session = apply($session, new ModifierEndTurn())
 
     session.subscribe(updated_session => {

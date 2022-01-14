@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Archetype, Card, GameSession, is_current_player, Player, PlayerMetadata } from "@game";
+    import { Archetype, Card, CardStack, GameSession, is_current_player, Player, PlayerMetadata } from "@game";
     import { getContext, onMount } from "svelte";
     import { writable, Writable } from "svelte/store";
     import CardToggle from "@components/CardToggle.svelte";
@@ -13,7 +13,7 @@
     let ap: number
     let is_playing: boolean
 
-    type UICardStack = Array<{ id: number, amount_usable: number, amount_used: number }>
+    type UICardStack = Array<{ top_id: number, cards: Card[], amount_usable: number, amount_used: number }>
 
     let ui_card_stacks: UICardStack[] = []
     let mounted = false
@@ -31,25 +31,48 @@
             let top_used = true
             for (const card_id of stack) {
                 const card = session.game.cards.get(card_id)
-                if (card.archetype == previous_archetype && card.used) {
-                    ui_card_stack[ui_card_stack.length-1].amount_used += 1
-                } else if (card.archetype == previous_archetype) {
-                    ui_card_stack[ui_card_stack.length-1].amount_usable += 1
+
+                if (card.archetype == previous_archetype) {
+                    ui_card_stack[ui_card_stack.length-1].cards.push(card)
+                    if (card.used) {
+                        ui_card_stack[ui_card_stack.length-1].amount_used += 1
+                    } else {
+                        ui_card_stack[ui_card_stack.length-1].amount_usable += 1
+                    }
                 } else {
                     ui_card_stack.push({
-                        id: card.id, 
+                        top_id: card.id, 
                         amount_usable: card.used ? 0 : 1, 
                         amount_used: card.used ? 1 : 0,
+                        cards: [ card ] 
                     })
+                    top_used = card.used
                 }
                 if (top_used) {
-                    ui_card_stack[ui_card_stack.length-1].id = card.id
-                    top_used == card.used
+                    ui_card_stack[ui_card_stack.length-1].top_id = card.id
+                    top_used = card.used
                 }
                 previous_archetype = card.archetype
             }
             return ui_card_stack
         })
+
+        // ????????????
+        if ($toggled_card && $toggled_card.used) {
+            ui_card_stacks.forEach(stack => {
+                const i = stack.findIndex(family => family.cards.some(c => c.id == $toggled_card.id))
+                if (i == -1) return
+                const j = stack[i].cards.findIndex(c => c.id == $toggled_card.id)
+                if (j == -1) return
+                if (j < stack[i].cards.length-1) {
+                    if (i < stack.length-1){
+                        $toggled_card = stack[i+1].cards[0]
+                    } else {
+                        $toggled_card = stack[i].cards[j+1]
+                    }
+                }
+            })
+        }
     }
 
     onMount(() => {
@@ -71,8 +94,8 @@
     <div class="grid grid-cols-2 gap-1 w-full h-fit mt-2">
         {#each ui_card_stacks as stack}
             <div class={"flex flex-col bg-primary-400/20 p-2 items-center h-fit gap-1 rounded-sm" + (player == 'Player1' ? "  border-white/10" : "  border-black/10")}>
-                {#each stack as {id, amount_usable, amount_used}, i}
-                    <CardToggle {toggled_card} stack_index={i} {id} {amount_usable} {amount_used}/>
+                {#each stack as {top_id, amount_usable, amount_used}, i}
+                    <CardToggle {toggled_card} stack_index={i} id={top_id} {amount_usable} {amount_used}/>
                 {/each}
             </div>
         {/each}
