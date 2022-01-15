@@ -13,7 +13,7 @@
     let ap: number
     let is_playing: boolean
 
-    type UICardStack = Array<{ top_id: number, cards: Card[], amount_usable: number, amount_used: number }>
+    type UICardStack = Array<{ top_id: number, first_usable: boolean, cards: Card[], amount_usable: number, amount_used: number }>
 
     let ui_card_stacks: UICardStack[] = []
     let mounted = false
@@ -29,6 +29,7 @@
             let ui_card_stack: UICardStack = new Array()
             let previous_archetype: Archetype = null
             let top_used = true
+            let first_usable_attributed = false
             for (const card_id of stack) {
                 const card = session.game.cards.get(card_id)
 
@@ -42,16 +43,24 @@
                 } else {
                     ui_card_stack.push({
                         top_id: card.id, 
+                        first_usable: false,
                         amount_usable: card.used ? 0 : 1, 
                         amount_used: card.used ? 1 : 0,
                         cards: [ card ] 
                     })
                     top_used = card.used
                 }
+                
                 if (top_used) {
                     ui_card_stack[ui_card_stack.length-1].top_id = card.id
                     top_used = card.used
                 }
+
+                if (!card.used && !first_usable_attributed) {
+                    ui_card_stack[ui_card_stack.length-1].first_usable = true
+                    first_usable_attributed = true
+                }
+
                 previous_archetype = card.archetype
             }
             return ui_card_stack
@@ -94,8 +103,8 @@
     <div class="grid grid-cols-2 gap-1 w-full h-fit mt-2">
         {#each ui_card_stacks as stack}
             <div class={"flex flex-col bg-primary-400/20 p-2 items-center h-fit gap-1 rounded-sm" + (player == 'Player1' ? "  border-white/10" : "  border-black/10")}>
-                {#each stack as {top_id, amount_usable, amount_used}, i}
-                    <CardToggle {toggled_card} stack_index={i} id={top_id} {amount_usable} {amount_used}/>
+                {#each stack as {top_id, amount_usable, amount_used, first_usable}}
+                    <CardToggle {toggled_card} on_top={first_usable} id={top_id} {amount_usable} {amount_used}/>
                 {/each}
             </div>
         {/each}

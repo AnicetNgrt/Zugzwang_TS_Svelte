@@ -8,12 +8,13 @@
     
     export let card: Card
 
-    let selectable = false
-    let selected = false
+    const update_selectable = (session: GameSession, card: Card) => [
+        session.selector.is_candidate(session, new Selectable(card, 'Card')),
+        session.selector.is_selected(session, new Selectable(card, 'Card'))
+    ]
 
     const on_session_update = (session: GameSession) => {
-        selectable = session.selector.is_candidate(session, new Selectable(card, 'Card'))
-        selected = session.selector.is_selected(session, new Selectable(card, 'Card'))
+        [selectable, selected] = update_selectable(session, card)
     }
 
     function try_select() {
@@ -28,6 +29,7 @@
     })
 
     $: archetype = card.archetype
+    $: [selectable, selected] = update_selectable($session, card)
 </script>
 
 {#if card}

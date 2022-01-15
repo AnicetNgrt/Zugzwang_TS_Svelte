@@ -13,7 +13,7 @@ module.exports = {
       },
       colors: {
         primary: colors.stone,
-        accent: colors.indigo
+        accent: colors.purple
       }
     },
   },

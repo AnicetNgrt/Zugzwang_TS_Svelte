@@ -10,10 +10,6 @@ const SmallRivers = new ArchetypeDisplacement(
     ]
 )
 
-export const StackSmallRivers = new ArchetypeStack([
-    SmallRivers, SmallRivers, SmallRivers, SmallRivers
-], 0)
-
 const Knight = new ArchetypeDisplacement(
     "Knight", 2, 
     [
@@ -27,6 +23,10 @@ const Knight = new ArchetypeDisplacement(
         { x: -2, y: -1 },
     ]
 )
+
+export const StackSmallRivers = new ArchetypeStack([
+    SmallRivers, Knight, SmallRivers
+], 0)
 
 export const StackKnight = new ArchetypeStack([
     Knight, Knight

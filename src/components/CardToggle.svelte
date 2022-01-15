@@ -4,7 +4,7 @@
     import type { Writable } from "svelte/store";
 
     export let id: number
-    export let stack_index: number
+    export let on_top: boolean
     export let toggled_card: Writable<Card>
     export let amount_usable: number
     export let amount_used: number
@@ -28,7 +28,7 @@
 
 {#if card}
 <div 
-class={"flex flex-col w-fit select-none shadow-primary-800/40 opacity-100 cursor-pointer hover:shadow-lg" + (card.used ? " opacity-40" : "") + (stack_index > 0 ? " opacity-60" : "") + (toggled ? " opacity-100 z-10" : "")}
+class={"flex flex-col w-fit select-none shadow-primary-800/40 opacity-100 cursor-pointer hover:shadow-lg" + (card.used ? " opacity-40" : "") + (on_top ? "" : " opacity-60") + (toggled ? " opacity-100 z-10" : "")}
 on:click={() => toggled_card.update(tc => {
     return tc ? (card.id == tc.id ? null : card) : card
 })}
