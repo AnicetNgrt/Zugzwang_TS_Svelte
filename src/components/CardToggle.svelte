@@ -35,12 +35,12 @@ on:click={() => toggled_card.update(tc => {
 >
     <div class="flex">
         <div class={"w-7 flex flex-grow px-0.5 bg-accent-800/40 items-center justify-center rounded-tl-sm"}>
-            <h2 class="text-accent-300/90 font-bold text-md">
+            <h2 class="text-accent-300/90 font-bold text-xs">
                 {archetype.action_points_cost}
             </h2>
         </div>
         <div class={"relative flex items-center justify-center w-24 px-2 py-0.5 flex-col self-center bg-primary-300/30 rounded-tr-sm" + (toggled ? " rounded-l-sm" : "")}>
-            <h1 class="text-sm">{archetype.name}</h1>
+            <h1 class="text-xs">{archetype.name}</h1>
         </div>
     </div>
     <div class="flex justify-around bg-accent-300/40 gap-1.5 text-accent-900/70 text-xs font-medium px-1 py-0.5 rounded-b-sm">
