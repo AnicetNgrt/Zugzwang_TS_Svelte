@@ -12,7 +12,7 @@
     $: fake_tiles = archetype instanceof ArchetypeDisplacement ? compute_tiles(archetype.pattern) : null
 </script>
 
-<div class="flex flex-col pt-0.5 bg-accent-800/40 text-accent-400/80 rounded-sm rounded-tl-none w-full">
+<div class="flex flex-col pt-0.5 bg-accent-800/40 text-accent-400/80 rounded-sm w-full">
     <div class="flex gap-2 items-center">
         <div class="flex w-8 h-8 justify-center items-center">
             <h1 class="text-xl font-bold text-accent-300/90">
@@ -38,5 +38,4 @@
             {/each}
         </div>
     {/if}
-    <slot/>
 </div>

@@ -33,24 +33,28 @@
     $: [selectable, selected] = update_selectable($session, card)
 </script>
 
-<div class="flex flex-col gap-0 w-full">
-    <div 
-        class="py-0.5 px-2 w-fit rounded-t-sm text-sm cursor-pointer bg-accent-800/40 text-accent-300/80 opacity-50 hover:opacity-100"
-        on:click={on_closed}
-    >
-        <span class="text-xs">🡐</span> back
+<div class="flex flex-col gap-1 w-full">
+    <div class="flex justify-between gap-1">
+        <div 
+            class="py-0.5 px-2 w-fit h-fit rounded-full cursor-pointer border-b-2 border-accent-700/30 bg-accent-800/40 text-accent-300/80 opacity-50 hover:opacity-100"
+            on:click={on_closed}
+        >
+            <span class="text-xs">🡐</span> back
+        </div>
+        <div 
+            class={"px-2 py-0.5 flex-grow text-center transition-all" + (selectable || selected ? " rounded-full border-b-2 font-medium cursor-pointer" : " rounded-sm text-primary-800/80 border-primary-900/0 cursor-default") + (selectable && !selected ? " bg-accent-400/60 text-accent-900/60 border-accent-900/30 hover:bg-accent-300/80 hover:text-accent-900 hover:border-accent-900/60 shadow-accent-900/50 hover:shadow-xl hover:scale-105" : "") + (selectable && selected ? " opacity-80 hover:opacity-100 bg-accent-300/80 text-accent-900 border-accent-900/60 shadow-accent-900/50" : "" ) + (!selectable && selected ? " opacity-50 cursor-not-allowed bg-accent-300/80 text-accent-900 border-accent-900/60 shadow-accent-900/50" : "" )}
+            on:click={try_select}
+        >
+            {#if selected}
+                Cancel
+            {:else if selectable}
+                Try this card
+            {:else}
+                You can't play this card
+            {/if}
+        </div>
     </div>
     {#if card}
-    <ArchetypePreview {archetype}>
-        {#if selectable}
-            <div class="px-2 py-1.5 bg-accent-300/60 text-accent-900/60 cursor-pointer" on:click={try_select}>
-                {#if selected}
-                    Cancel
-                {:else}
-                    Play this card
-                {/if}
-            </div>
-        {/if}
-    </ArchetypePreview>
+    <ArchetypePreview {archetype}/>
     {/if}
 </div>
